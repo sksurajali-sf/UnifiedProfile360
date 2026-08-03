@@ -1,7 +1,0 @@
-<design:component label="Unified Related Data Explorer">
-    <design:attribute
-        name="pageSize"
-        label="Records per page"
-        description="Rows shown before paging. The search itself fetches the latest 100."
-    />
-</design:component>

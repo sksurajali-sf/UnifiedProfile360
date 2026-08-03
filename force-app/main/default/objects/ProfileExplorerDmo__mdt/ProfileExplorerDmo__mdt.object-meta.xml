@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
-    <label>Profile Explorer DMO</label>
-    <pluralLabel>Profile Explorer DMOs</pluralLabel>
-    <visibility>Public</visibility>
-    <description>Profile-category Data Cloud DMOs offered in the custom Profile Explorer. Data Cloud objects are queryable but absent from the Apex describe catalogue, so they cannot be enumerated at runtime and are registered here instead.</description>
-</CustomObject>

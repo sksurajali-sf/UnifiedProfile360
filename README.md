@@ -8,10 +8,13 @@ related data model object without writing SQL.
 
 | | |
 | --- | --- |
-| **Install (any org)** | https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ9000000l3kP |
+| **Install (any org)** | https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ9000000l3ke |
+| **Installation password** | `GDC@India` |
 | **Implementation guide** | [`docs/Unified_Profile_360_Implementation_Guide.pdf`](docs/Unified_Profile_360_Implementation_Guide.pdf) |
 | **API version** | 67.0 |
 | **Requires** | Salesforce Data Cloud, at least one Identity Resolution ruleset that has run |
+
+For a sandbox, replace `login` with `test` in the install URL.
 
 ## What the page shows
 
@@ -45,17 +48,19 @@ loaded from a file that carries only an address are not lost.
 
 | Type | Count | Members |
 | --- | --- | --- |
-| ApexClass | 12 | 6 controllers + 6 test classes |
-| AuraDefinitionBundle | 8 | `dcProfileLayout` plus one thin shell per panel |
-| LightningComponentBundle | 12 | 8 panels, the shared page-context module, and the 3-part standalone explorer |
-| CustomObject | 1 | `ProfileExplorerDmo__mdt` |
-| CustomMetadata | 1 | `ProfileExplorerDmo.Unified_Individual` |
-| FlexiPage | 1 | `Data_Cloud_Profile_Explorer` — CDP record page for `UnifiedIndividual__dlm` |
+| ApexClass | 10 | 5 controllers + 5 test classes |
+| AuraDefinitionBundle | 1 | `dcProfileLayout` |
+| LightningComponentBundle | 9 | 8 panels + the shared page-context module |
+| FlexiPage | 1 | `Unified_Profile_360` — CDP record page for `UnifiedIndividual__dlm` |
 
-Aura shells exist because a Lightning web component cannot target a CDP record page. Each shell
-implements `flexipage:availableForAllPageTypes` and passes `recordId` / `sObjectName` through to
-its LWC. `dcProfileLayout` ("Unified Profile Page") is the whole layout in one drop; the seven
-single-panel shells are there for pages that need their own arrangement.
+21 members, 4 metadata types. No custom object, no stored data, no scheduled job, nothing written
+back to Data Cloud.
+
+The Aura shell exists because a Lightning web component cannot target a CDP record page.
+`dcProfileLayout` implements `flexipage:availableForAllPageTypes`, passes `recordId` /
+`sObjectName` through to `unifiedProfileView`, and appears in App Builder as **Unified Profile
+Page** — the single component you drop, which renders all seven panels in their intended
+positions.
 
 ## Deploy from source
 
@@ -65,12 +70,13 @@ sf project deploy start --manifest manifest/package.xml --target-org TARGET_ORG 
 sf apex run test --target-org TARGET_ORG \
   --tests UnifiedProfileControllerTest --tests UnifiedProfileRegistryTest \
   --tests UnifiedSegmentControllerTest --tests UnifiedInsightControllerTest \
-  --tests UnifiedDmoExplorerControllerTest --tests ProfileExplorerControllerTest \
+  --tests UnifiedDmoExplorerControllerTest \
   --result-format human --wait 20
 ```
 
-Then activate `Data Cloud Profile Explorer` as the org default CDP record page for Unified
-Individual (Setup → Lightning App Builder → open the page → Activation). Section 9 of the
+116 tests, every class above 75% coverage. Then activate `Unified Profile 360` as the org default
+CDP record page for Unified Individual (Setup → Lightning App Builder → open the page →
+Activation). Section 9 of the
 implementation guide covers this, including how to build the same page for a ruleset other than
 the standard Unified Individual.
 
@@ -89,6 +95,9 @@ insight, and whichever DMO the user picks in Explore Related Data. Nothing is wr
 - The reconciliation rule itself is not exposed by any API. The winner tooltip therefore reports
   observable evidence — which row the ruleset attributed the profile to, how many sources agree,
   and when the winning row was linked.
-- Data Cloud objects are absent from `getGlobalDescribe` and `EntityDefinition`, so the object
-  picker on the standalone search page reads `ProfileExplorerDmo__mdt`. Add one record per
-  profile DMO per data space you want listed.
+- Data Cloud objects are absent from `getGlobalDescribe` and `EntityDefinition`, so Explore
+  Related Data builds its object list from the Data Cloud metadata service at runtime rather than
+  from Apex schema describe.
+- Only the page for the standard Unified Individual is packaged. Rulesets such as Unified
+  Individual MC carry org-specific DMO names, so their pages are built in App Builder — five
+  clicks, same components, covered in Section 9.2 of the guide.

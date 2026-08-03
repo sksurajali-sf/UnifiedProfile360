@@ -18,7 +18,7 @@
         <name>sidebar</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Data Cloud Profile Explorer</masterLabel>
+    <masterLabel>Unified Profile 360</masterLabel>
     <template>
         <name>runtime_cdp:cdpRecordHomeTemplateDesktop</name>
         <properties>
