@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Unified Calculated Insights</masterLabel>
+    <description>Every calculated insight keyed by this unified profile, with its measures and dimensions.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage">
+            <property
+                name="insightApiNames"
+                type="String"
+                label="Calculated insight API names (fallback)"
+                description="The picker normally lists every insight in the org. These comma separated __cio names are used only if the insight catalogue cannot be read."
+                default="Lifetime_Purchase_Count__cio,Total_Visits__cio,Cg_Monthly_Count__cio"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

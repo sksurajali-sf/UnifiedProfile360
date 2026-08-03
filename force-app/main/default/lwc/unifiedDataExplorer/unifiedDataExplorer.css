@@ -1,0 +1,143 @@
+/* Visible overflow so the pickers can open past the card edge. */
+.upe-card {
+    border-radius: 0.25rem;
+    overflow: visible;
+}
+
+.upe-card__header {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e5e5;
+    border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.upe-card__title {
+    color: #032d60;
+    font-weight: 600;
+}
+
+.upe-pickers {
+    align-items: flex-end;
+}
+
+/* Lines the button up with the bottom of the pickers beside it. */
+.upe-search-cell {
+    display: flex;
+    align-items: flex-end;
+}
+
+.upe-search {
+    width: 100%;
+}
+
+.upe-hint {
+    font-size: 0.6875rem;
+    color: #5c5c5c;
+}
+
+.upe-results__header {
+    display: flex;
+    align-items: baseline;
+    background: #fafaf9;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.upe-results__title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #181818;
+}
+
+/* Columns keep their own width and the strip scrolls, so the card never widens with the
+   number of columns chosen. */
+.upe-table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.upe-table {
+    font-size: 0.8125rem;
+    width: max-content;
+    min-width: 100%;
+}
+
+.upe-table th,
+.upe-table td {
+    white-space: nowrap;
+}
+
+/* Long free text still has a ceiling, so one wordy column cannot push the rest off screen. */
+.upe-cell {
+    display: inline-block;
+    max-width: 18rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+}
+
+.upe-table thead th {
+    background: #fafaf9;
+    color: #5c5c5c;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.0625rem;
+}
+
+.upe-sub {
+    display: block;
+    font-size: 0.6875rem;
+    color: #5c5c5c;
+}
+
+.upe-sub_inline {
+    display: inline;
+    margin-left: 0.5rem;
+}
+
+.upe-footer {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #e5e5e5;
+    background: #fafaf9;
+}
+
+.upe-range {
+    font-size: 0.75rem;
+    color: #5c5c5c;
+}
+
+.upe-pager {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.upe-skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #ecebea 37%, #f3f3f3 63%);
+    background-size: 400% 100%;
+    animation: upe-shimmer 1.4s ease infinite;
+    border-radius: 0.25rem;
+    height: 0.75rem;
+}
+
+.upe-skeleton_line {
+    width: 70%;
+}
+
+@keyframes upe-shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-skeleton {
+        animation: none;
+    }
+}

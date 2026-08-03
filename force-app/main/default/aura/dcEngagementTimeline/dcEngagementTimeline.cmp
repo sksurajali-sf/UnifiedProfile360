@@ -1,0 +1,22 @@
+<!--
+  See dcProfileHeader for why each panel has its own shell. Only the two row limits are
+  exposed to App Builder, because a design attribute cannot be withdrawn later.
+-->
+<aura:component
+    implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
+    access="global"
+    description="Email and web engagement across every source individual, newest first."
+>
+    <aura:attribute name="recordId" type="String" access="global" />
+    <aura:attribute name="sObjectName" type="String" access="global" />
+
+    <aura:attribute name="maxRows" type="Integer" default="50" access="global" />
+    <aura:attribute name="initialRows" type="Integer" default="10" access="global" />
+
+    <c:unifiedEngagementTimeline
+        recordId="{!v.recordId}"
+        objectApiName="{!v.sObjectName}"
+        maxRows="{!v.maxRows}"
+        initialRows="{!v.initialRows}"
+    />
+</aura:component>

@@ -1,0 +1,13 @@
+<!--
+  See dcProfileHeader for why each panel has its own shell.
+-->
+<aura:component
+    implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
+    access="global"
+    description="Contributing individuals, emails, phones and addresses behind the unified profile."
+>
+    <aura:attribute name="recordId" type="String" access="global" />
+    <aura:attribute name="sObjectName" type="String" access="global" />
+
+    <c:unifiedIdentityBreakdown recordId="{!v.recordId}" objectApiName="{!v.sObjectName}" />
+</aura:component>

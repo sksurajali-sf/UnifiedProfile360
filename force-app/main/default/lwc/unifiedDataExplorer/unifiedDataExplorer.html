@@ -1,0 +1,159 @@
+<template>
+    <article class="slds-card upe-card">
+        <div class="upe-card__header slds-p-around_small">
+            <lightning-icon icon-name="standard:data_streams" size="small" class="slds-m-right_small"></lightning-icon>
+            <span class="slds-text-heading_small upe-card__title">Explore Related Data</span>
+            <lightning-helptext
+                class="slds-m-left_x-small"
+                content="Any object linked to this individual. Rows are matched on the column you pick, against this profile's unified id and the ids of every record that built it."
+            ></lightning-helptext>
+        </div>
+
+        <div class="slds-p-around_small">
+            <div class="slds-grid slds-gutters_x-small slds-wrap upe-pickers">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_5-of-12">
+                    <lightning-combobox
+                        label="Data model object"
+                        placeholder={objectPlaceholder}
+                        options={objectOptions}
+                        value={selectedObject}
+                        disabled={loadingObjects}
+                        onchange={handleObject}
+                    ></lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_5-of-12">
+                    <lightning-combobox
+                        label="Key column"
+                        placeholder="Column that holds the individual"
+                        field-level-help="Rows are kept when this column matches the profile's unified id or one of its source individual ids."
+                        options={keyOptions}
+                        value={keyColumn}
+                        disabled={fieldsDisabled}
+                        onchange={handleKeyColumn}
+                    ></lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-12 upe-search-cell">
+                    <lightning-button
+                        variant="brand"
+                        label="Search"
+                        icon-name="utility:search"
+                        disabled={searchDisabled}
+                        onclick={handleSearch}
+                        class="upe-search"
+                    ></lightning-button>
+                </div>
+            </div>
+
+            <div class="slds-m-top_small">
+                <lightning-dual-listbox
+                    label="Columns to show"
+                    source-label="Available fields"
+                    selected-label="Shown as columns"
+                    field-level-help="As many columns as you need. Their labels become the table headers, and the table scrolls sideways once they outgrow the card."
+                    options={fieldOptions}
+                    value={selectedFields}
+                    size="5"
+                    disabled={fieldsDisabled}
+                    is-loading={loadingFields}
+                    onchange={handleFields}
+                ></lightning-dual-listbox>
+                <p class="upe-hint slds-m-top_xx-small">{fieldHelp}</p>
+            </div>
+        </div>
+
+        <template lwc:if={error}>
+            <p class="slds-p-horizontal_small slds-p-bottom_small slds-text-body_small slds-text-color_error">
+                {error}
+            </p>
+        </template>
+
+        <template lwc:if={searching}>
+            <div class="slds-p-horizontal_small slds-p-bottom_small">
+                <div class="upe-skeleton upe-skeleton_line"></div>
+                <div class="upe-skeleton upe-skeleton_line slds-m-top_x-small"></div>
+            </div>
+        </template>
+
+        <template lwc:elseif={showEmptyState}>
+            <p class="slds-p-horizontal_small slds-p-bottom_small slds-text-body_small slds-text-color_weak">
+                {emptyMessage}
+            </p>
+        </template>
+
+        <template lwc:elseif={hasResults}>
+            <div class="upe-results__header slds-p-horizontal_small slds-p-vertical_xx-small">
+                <span class="upe-results__title">{resultTitle}</span>
+                <span class="upe-sub upe-sub_inline">{orderNote}</span>
+            </div>
+
+            <div class="upe-table-scroll">
+                <table class="slds-table slds-table_bordered upe-table">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <template for:each={columns} for:item="column">
+                                <th key={column.apiName} scope="col">
+                                    <span title={column.apiName}>{column.label}</span>
+                                </th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={visibleRows} for:item="row">
+                            <tr key={row.key} class="upe-row">
+                                <template for:each={row.cells} for:item="cell">
+                                    <td key={cell.key}>
+                                        <template lwc:if={cell.isDate}>
+                                            <lightning-formatted-date-time
+                                                value={cell.value}
+                                                year="numeric"
+                                                month="short"
+                                                day="2-digit"
+                                                hour="2-digit"
+                                                minute="2-digit"
+                                            ></lightning-formatted-date-time>
+                                        </template>
+                                        <template lwc:elseif={cell.isNumber}>
+                                            <lightning-formatted-number
+                                                value={cell.numberValue}
+                                                maximum-fraction-digits="2"
+                                            ></lightning-formatted-number>
+                                        </template>
+                                        <template lwc:else>
+                                            <span class="upe-cell" title={cell.value}>{cell.display}</span>
+                                        </template>
+                                    </td>
+                                </template>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="upe-footer slds-p-around_x-small">
+                <span class="upe-range">{rangeLabel}</span>
+                <template lwc:if={truncated}>
+                    <span class="upe-sub upe-sub_inline">{truncationNote}</span>
+                </template>
+                <template lwc:if={showPager}>
+                    <div class="upe-pager">
+                        <lightning-button-icon
+                            icon-name="utility:chevronleft"
+                            variant="border-filled"
+                            alternative-text="Previous page"
+                            disabled={onFirstPage}
+                            onclick={handlePrevious}
+                        ></lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:chevronright"
+                            variant="border-filled"
+                            alternative-text="Next page"
+                            disabled={onLastPage}
+                            onclick={handleNext}
+                            class="slds-m-left_xx-small"
+                        ></lightning-button-icon>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </article>
+</template>

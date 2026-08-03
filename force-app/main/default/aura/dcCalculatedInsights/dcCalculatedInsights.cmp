@@ -1,0 +1,24 @@
+<!--
+  See dcProfileHeader for why each panel has its own shell.
+-->
+<aura:component
+    implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
+    access="global"
+    description="Every calculated insight keyed by this unified profile, with its measures and dimensions."
+>
+    <aura:attribute name="recordId" type="String" access="global" />
+    <aura:attribute name="sObjectName" type="String" access="global" />
+
+    <aura:attribute
+        name="insightApiNames"
+        type="String"
+        default="Lifetime_Purchase_Count__cio,Total_Visits__cio,Cg_Monthly_Count__cio"
+        access="global"
+    />
+
+    <c:unifiedInsightPanel
+        recordId="{!v.recordId}"
+        objectApiName="{!v.sObjectName}"
+        insightApiNames="{!v.insightApiNames}"
+    />
+</aura:component>

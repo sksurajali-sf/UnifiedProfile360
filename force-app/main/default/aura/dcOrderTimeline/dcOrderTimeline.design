@@ -1,0 +1,12 @@
+<design:component label="Unified Sales Order Timeline">
+    <design:attribute
+        name="maxRows"
+        label="Maximum orders fetched"
+        description="Upper bound on orders read. Lower values load faster."
+    />
+    <design:attribute
+        name="initialRows"
+        label="Orders shown before expanding"
+        description="Rows visible on load. The rest appear behind a Show more control."
+    />
+</design:component>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Unified Engagement Timeline</masterLabel>
+    <description>Email and web engagement for every source individual behind the unified profile, newest first.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage">
+            <property
+                name="maxRows"
+                type="Integer"
+                label="Maximum events"
+                description="Upper bound on events fetched per channel. Lower values load faster."
+                default="50"
+                min="5"
+                max="200"
+            />
+            <property
+                name="initialRows"
+                type="Integer"
+                label="Events shown before expanding"
+                description="Rows visible on load. The rest appear behind a Show more control."
+                default="10"
+                min="1"
+                max="200"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

@@ -1,0 +1,135 @@
+/* Visible overflow so the page size menu can hang past the header. */
+.upe-card {
+    border-radius: 0.25rem;
+    overflow: visible;
+}
+
+/* 3rem keeps this level with the cards in the other column. */
+.upe-card__header {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e5e5;
+    border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.upe-card__title {
+    color: #032d60;
+    font-weight: 600;
+}
+
+.upe-page-size {
+    margin-left: auto;
+    position: relative;
+    z-index: 2;
+}
+
+.upe-table {
+    font-size: 0.8125rem;
+}
+
+.upe-table thead th {
+    background: #fafaf9;
+    color: #5c5c5c;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.0625rem;
+}
+
+.upe-name {
+    display: inline-block;
+    max-width: 100%;
+    color: #181818;
+    font-weight: 600;
+}
+
+/* Second line inside a cell: member counts, publish results, next run. */
+.upe-sub {
+    display: block;
+    font-size: 0.6875rem;
+    color: #5c5c5c;
+}
+
+.upe-sub_inline {
+    display: inline;
+    margin-left: 0.5rem;
+}
+
+.upe-status {
+    display: inline-block;
+    padding: 0 0.5rem;
+    border-radius: 0.75rem;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+    background: #ecebea;
+    color: #444444;
+}
+
+.upe-status_active {
+    background: #ebf7ee;
+    color: #2e844a;
+}
+
+.upe-status_inactive,
+.upe-status_draft {
+    background: #fef1ee;
+    color: #8c4b02;
+}
+
+.upe-pill {
+    display: inline-block;
+    padding: 0 0.375rem;
+    border-radius: 0.75rem;
+    background: #0176d3;
+    color: #ffffff;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+}
+
+.upe-footer {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #e5e5e5;
+    background: #fafaf9;
+}
+
+.upe-range {
+    font-size: 0.75rem;
+    color: #5c5c5c;
+}
+
+.upe-pager {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.upe-skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #ecebea 37%, #f3f3f3 63%);
+    background-size: 400% 100%;
+    animation: upe-shimmer 1.4s ease infinite;
+    border-radius: 0.25rem;
+    height: 0.75rem;
+}
+
+.upe-skeleton_line {
+    width: 70%;
+}
+
+@keyframes upe-shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-skeleton {
+        animation: none;
+    }
+}

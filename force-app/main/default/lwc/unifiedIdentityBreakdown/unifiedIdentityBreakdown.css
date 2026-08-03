@@ -1,0 +1,190 @@
+.upe-section {
+    border-radius: 0.25rem;
+    /* Not hidden: the winner popover has to be able to escape the card. */
+    overflow: visible;
+}
+
+/* Long source lists scroll rather than pushing the rest of the column down. */
+.upe-section__body {
+    max-height: 16rem;
+    overflow: auto;
+}
+
+/* 3rem matches the card headers in the timeline and insight panels, so a section and the
+   card beside it begin at the same height. Change all four together. */
+.upe-section__header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 3rem;
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.upe-section__toggle {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    padding: 0;
+}
+
+.upe-section__toggle:hover .upe-section__title,
+.upe-section__toggle:focus .upe-section__title {
+    text-decoration: underline;
+}
+
+.upe-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.375rem;
+    padding: 0.125rem;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.upe-info:hover,
+.upe-info:focus {
+    background: #d8edff;
+}
+
+.upe-popover {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0.5rem;
+    z-index: 10;
+    width: 18rem;
+    max-width: 90vw;
+    padding: 0.75rem;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+.upe-popover__title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #032d60;
+    margin-bottom: 0.375rem;
+}
+
+.upe-popover__list {
+    list-style: disc;
+    padding-left: 1rem;
+    font-size: 0.75rem;
+    color: #181818;
+}
+
+.upe-popover__list li {
+    margin-bottom: 0.125rem;
+}
+
+.upe-popover__note {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e5e5;
+    font-size: 0.6875rem;
+    color: #5c5c5c;
+}
+
+.upe-section__title {
+    color: #032d60;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.upe-count {
+    background: #d8edff;
+    color: #032d60;
+}
+
+.upe-winner {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    max-width: 22rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 1rem;
+    background: #2e844a;
+    color: #ffffff;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upe-table {
+    font-size: 0.8125rem;
+}
+
+.upe-table thead th {
+    background: #fafaf9;
+    color: #5c5c5c;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.0625rem;
+}
+
+.upe-row_winner {
+    background: #ebf7ee;
+}
+
+.upe-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+}
+
+.upe-source {
+    background: #eef4ff;
+    color: #032d60;
+    font-size: 0.6875rem;
+}
+
+.upe-pill {
+    display: inline-block;
+    padding: 0 0.375rem;
+    border-radius: 0.75rem;
+    background: #2e844a;
+    color: #ffffff;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+}
+
+.upe-skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #ecebea 37%, #f3f3f3 63%);
+    background-size: 400% 100%;
+    animation: upe-shimmer 1.4s ease infinite;
+    border-radius: 0.25rem;
+    height: 0.75rem;
+}
+
+.upe-skeleton_line {
+    width: 70%;
+}
+
+@keyframes upe-shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-skeleton {
+        animation: none;
+    }
+}

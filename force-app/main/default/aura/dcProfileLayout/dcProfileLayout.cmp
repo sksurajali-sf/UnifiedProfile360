@@ -1,0 +1,15 @@
+<!--
+  The whole profile page as a single drop. A CDP record page region is one column wide, so the
+  side-by-side arrangement has to come from inside the component rather than from the page.
+  The individual dc* wrappers remain available for pages that need a custom arrangement.
+-->
+<aura:component
+    implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
+    access="global"
+    description="Complete unified profile: header, identity breakdown and insights beside the timelines."
+>
+    <aura:attribute name="recordId" type="String" access="global" />
+    <aura:attribute name="sObjectName" type="String" access="global" />
+
+    <c:unifiedProfileView recordId="{!v.recordId}" objectApiName="{!v.sObjectName}" />
+</aura:component>

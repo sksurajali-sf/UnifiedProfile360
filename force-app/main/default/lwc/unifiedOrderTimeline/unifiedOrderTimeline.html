@@ -1,0 +1,133 @@
+<template>
+    <article class="slds-card upe-card">
+        <div class="upe-card__header">
+            <lightning-icon icon-name="standard:orders" size="small" class="slds-m-right_small"></lightning-icon>
+            <span class="slds-text-heading_small upe-card__title">Sales Order Timeline</span>
+            <template lwc:if={hasStatusFilter}>
+                <lightning-button-menu
+                    class="upe-status"
+                    label={statusLabel}
+                    icon-name="utility:filterList"
+                    variant={statusVariant}
+                    menu-alignment="auto"
+                    alternative-text="Filter by order status"
+                    title="Filter by order status"
+                    onselect={handleStatus}
+                >
+                    <template for:each={statusOptions} for:item="status">
+                        <lightning-menu-item
+                            key={status.value}
+                            value={status.value}
+                            label={status.label}
+                            checked={status.checked}
+                        ></lightning-menu-item>
+                    </template>
+                </lightning-button-menu>
+            </template>
+        </div>
+
+        <template lwc:if={loading}>
+            <div class="slds-p-around_medium">
+                <div class="upe-skeleton upe-skeleton_line"></div>
+                <div class="upe-skeleton upe-skeleton_line slds-m-top_x-small"></div>
+            </div>
+        </template>
+
+        <template lwc:elseif={error}>
+            <div class="slds-p-around_medium slds-text-color_error slds-text-body_small">{error}</div>
+        </template>
+
+        <template lwc:elseif={isEmpty}>
+            <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak slds-text-body_small">
+                <lightning-icon icon-name="utility:info_alt" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                <p>No orders for this unified profile.</p>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <template lwc:if={isFilteredEmpty}>
+                <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak slds-text-body_small">
+                    <lightning-icon icon-name="utility:info_alt" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                    <p>{filteredEmptyMessage}</p>
+                </div>
+            </template>
+
+            <template lwc:if={hasVisibleOrders}>
+                <!-- Always present, so the total reads as the headline figure for the card. -->
+                <div class="upe-summary slds-p-around_small">
+                    <span class="slds-text-title upe-label">Total Order Value</span>
+                    <template lwc:if={hasAnyAmount}>
+                        <template for:each={currencyTotals} for:item="total">
+                            <span key={total.key} class="upe-summary__value">
+                                <lightning-formatted-number
+                                    value={total.amount}
+                                    format-style="currency"
+                                    currency-code={total.currencyCode}
+                                ></lightning-formatted-number>
+                            </span>
+                        </template>
+                        <span class="upe-summary__note">{totalScopeLabel}</span>
+                    </template>
+                    <template lwc:else>
+                        <span class="upe-summary__value upe-summary__value_muted">—</span>
+                        <span class="upe-summary__note">
+                            No amount is mapped on the Sales Order DMO for these {orderCountLabel}
+                        </span>
+                    </template>
+                </div>
+
+                <ul class="upe-orders slds-p-around_small">
+                    <template for:each={visibleOrders} for:item="order">
+                        <li key={order.key} class="upe-order">
+                            <div class="upe-order__row">
+                                <span class="upe-order__id" title={order.customerId}>{order.orderNumber}</span>
+                                <span class="upe-order__amount">
+                                    <template lwc:if={order.hasAmount}>
+                                        <lightning-formatted-number
+                                            value={order.totalAmount}
+                                            format-style="currency"
+                                            currency-code={order.currencyCode}
+                                        ></lightning-formatted-number>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="upe-noamount" title="No amount mapped on the Sales Order DMO for this order">—</span>
+                                    </template>
+                                </span>
+                            </div>
+
+                            <div class="upe-order__row slds-m-top_xx-small">
+                                <span class="upe-order__meta">
+                                    <template lwc:if={order.hasDate}>
+                                        <lightning-formatted-date-time
+                                            value={order.orderDate}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit"
+                                            time-zone="UTC"
+                                        ></lightning-formatted-date-time>
+                                    </template>
+                                    <template lwc:else>No order date</template>
+                                    <template lwc:if={order.channel}>
+                                        <span class="upe-dot">•</span>{order.channel}
+                                    </template>
+                                </span>
+                                <span class={order.statusClass}>{order.status}</span>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+
+                <template lwc:if={isExpandable}>
+                    <button class="upe-more" onclick={handleToggle} type="button">
+                        <lightning-icon
+                            icon-name={toggleIcon}
+                            size="xx-small"
+                            class="slds-m-right_xx-small upe-more__icon"
+                        ></lightning-icon>
+                        {toggleLabel}
+                    </button>
+                </template>
+            </template>
+        </template>
+    </article>
+</template>

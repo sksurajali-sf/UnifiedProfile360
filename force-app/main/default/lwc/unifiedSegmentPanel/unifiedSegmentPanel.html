@@ -1,0 +1,134 @@
+<template>
+    <article class="slds-card upe-card">
+        <div class="upe-card__header slds-p-around_small">
+            <lightning-icon icon-name="standard:segments" size="small" class="slds-m-right_small"></lightning-icon>
+            <span class="slds-text-heading_small upe-card__title">Segments</span>
+            <template lwc:if={hasSegments}>
+                <div class="upe-page-size">
+                    <lightning-button-menu
+                        label={pageSizeLabel}
+                        variant="border-filled"
+                        menu-alignment="right"
+                        alternative-text="Segments per page"
+                        title="Segments per page"
+                        onselect={handlePageSize}
+                    >
+                        <template for:each={pageSizeOptions} for:item="option">
+                            <lightning-menu-item
+                                key={option.value}
+                                value={option.value}
+                                label={option.label}
+                                checked={option.checked}
+                            ></lightning-menu-item>
+                        </template>
+                    </lightning-button-menu>
+                </div>
+            </template>
+        </div>
+
+        <template lwc:if={loading}>
+            <div class="slds-p-around_small">
+                <div class="upe-skeleton upe-skeleton_line"></div>
+                <div class="upe-skeleton upe-skeleton_line slds-m-top_x-small"></div>
+            </div>
+        </template>
+
+        <template lwc:elseif={error}>
+            <p class="slds-p-around_small slds-text-body_small slds-text-color_error">{error}</p>
+        </template>
+
+        <template lwc:elseif={isEmpty}>
+            <p class="slds-p-around_small slds-text-body_small slds-text-color_weak">{emptyMessage}</p>
+        </template>
+
+        <template lwc:else>
+            <table class="slds-table slds-table_bordered upe-table">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th scope="col"><span class="slds-truncate">Segment</span></th>
+                        <th scope="col"><span class="slds-truncate">Last Published</span></th>
+                        <th scope="col"><span class="slds-truncate">Status</span></th>
+                        <th scope="col"><span class="slds-truncate">Schedule</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={visibleSegments} for:item="segment">
+                        <tr key={segment.key} class="upe-row">
+                            <td>
+                                <span class="upe-name slds-truncate" title={segment.name}>{segment.name}</span>
+                                <template lwc:if={segment.isNewMember}>
+                                    <span class="upe-pill slds-m-left_xx-small">New</span>
+                                </template>
+                                <template lwc:if={segment.memberCountLabel}>
+                                    <span class="upe-sub">{segment.memberCountLabel}</span>
+                                </template>
+                            </td>
+                            <td>
+                                <template lwc:if={segment.lastPublished}>
+                                    <lightning-formatted-date-time
+                                        value={segment.lastPublished}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                        hour="2-digit"
+                                        minute="2-digit"
+                                    ></lightning-formatted-date-time>
+                                </template>
+                                <template lwc:else>
+                                    <span class="slds-text-color_weak">Not published</span>
+                                </template>
+                            </td>
+                            <td>
+                                <span class={segment.statusClass}>{segment.status}</span>
+                                <template lwc:if={segment.publishStatus}>
+                                    <span class="upe-sub" title="Last publish result">{segment.publishStatus}</span>
+                                </template>
+                            </td>
+                            <td>
+                                <span class="slds-truncate" title={segment.publishTypeLabel}>{segment.schedule}</span>
+                                <template lwc:if={segment.nextPublish}>
+                                    <span class="upe-sub">
+                                        <span>Next:&nbsp;</span>
+                                        <lightning-formatted-date-time
+                                            value={segment.nextPublish}
+                                            month="short"
+                                            day="2-digit"
+                                            hour="2-digit"
+                                            minute="2-digit"
+                                        ></lightning-formatted-date-time>
+                                    </span>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+            <div class="upe-footer slds-p-around_x-small">
+                <span class="upe-range">{rangeLabel}</span>
+                <template lwc:if={truncated}>
+                    <span class="upe-sub upe-sub_inline">most recent memberships only</span>
+                </template>
+                <template lwc:if={showPager}>
+                    <div class="upe-pager">
+                        <lightning-button-icon
+                            icon-name="utility:chevronleft"
+                            variant="border-filled"
+                            alternative-text="Previous page"
+                            disabled={onFirstPage}
+                            onclick={handlePrevious}
+                        ></lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:chevronright"
+                            variant="border-filled"
+                            alternative-text="Next page"
+                            disabled={onLastPage}
+                            onclick={handleNext}
+                            class="slds-m-left_xx-small"
+                        ></lightning-button-icon>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </article>
+</template>

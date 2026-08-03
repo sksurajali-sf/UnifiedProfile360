@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Unified Sales Order Timeline</masterLabel>
+    <description>Orders across every source individual in the unified profile, with order value derived from line items.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage">
+            <property
+                name="maxRows"
+                type="Integer"
+                label="Maximum orders"
+                description="Upper bound on orders fetched. Lower values load faster."
+                default="25"
+                min="1"
+                max="100"
+            />
+            <property
+                name="initialRows"
+                type="Integer"
+                label="Orders shown before expanding"
+                description="Rows visible on load. The rest appear behind a Show more control."
+                default="10"
+                min="1"
+                max="100"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

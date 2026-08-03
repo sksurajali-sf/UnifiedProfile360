@@ -1,0 +1,239 @@
+/* Fills the height handed down by the page, with the list scrolling inside, so this card ends
+   level with the insight panel in the other column. */
+/* Visible overflow so the status menu is not clipped by the card; the list below scrolls on
+   its own, so nothing else needs the card to clip. */
+.upe-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 18rem;
+    border-radius: 0.25rem;
+    overflow: visible;
+}
+
+/* Sits on the title line, hard against the opposite corner. Above the rows below, so the open
+   menu is never painted over. */
+.upe-status {
+    position: relative;
+    z-index: 3;
+    flex-shrink: 0;
+    margin-left: auto;
+    max-width: 60%;
+}
+
+.upe-orders {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* 3rem keeps this level with the identity sections in the other column. The radius is set here
+   because the card itself can no longer clip its children. */
+/* Tight vertical padding so the filter button rides inside the 3rem, rather than growing the
+   header past the cards it lines up with. */
+.upe-card__header {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    padding: 0.25rem 0.75rem;
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e5e5;
+    border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.upe-card__title {
+    color: #032d60;
+    font-weight: 600;
+}
+
+.upe-count {
+    background: #ecebea;
+    color: #444444;
+}
+
+.upe-count_right {
+    margin-left: auto;
+}
+
+.upe-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.5rem;
+    background: transparent;
+    border: 0;
+    border-top: 1px solid #e5e5e5;
+    color: #0176d3;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.upe-more:hover,
+.upe-more:focus {
+    background: #f3f9ff;
+}
+
+.upe-more__icon {
+    --slds-c-icon-color-foreground-default: #0176d3;
+    transition: transform 0.15s ease;
+}
+
+.upe-more:hover .upe-more__icon {
+    transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-more,
+    .upe-more__icon {
+        transition: none;
+    }
+}
+
+/* The total is the headline of this card, so it gets its own line under the label. */
+.upe-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.5rem;
+    background: #fafaf9;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* One figure per currency, so a mixed-currency history never gets added together. */
+.upe-summary__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #032d60;
+    line-height: 1.2;
+}
+
+.upe-summary__value ~ .upe-summary__value {
+    font-size: 1rem;
+    color: #444444;
+}
+
+.upe-summary__value_muted {
+    color: #5c5c5c;
+}
+
+.upe-summary__note {
+    font-size: 0.75rem;
+    color: #5c5c5c;
+}
+
+.upe-label {
+    flex: 0 0 100%;
+    color: #5c5c5c;
+    font-size: 0.75rem;
+}
+
+.upe-orders {
+    margin: 0;
+    list-style: none;
+}
+
+.upe-order {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.upe-order:last-child {
+    border-bottom: 0;
+}
+
+.upe-order__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.upe-order__id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #181818;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upe-order__amount {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #032d60;
+    white-space: nowrap;
+}
+
+.upe-noamount {
+    color: #5c5c5c;
+    font-weight: 400;
+    cursor: help;
+}
+
+.upe-order__meta {
+    font-size: 0.75rem;
+    color: #5c5c5c;
+}
+
+.upe-dot {
+    margin: 0 0.25rem;
+}
+
+.upe-status {
+    padding: 0.0625rem 0.5rem;
+    border-radius: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    background: #ecebea;
+    color: #444444;
+    white-space: nowrap;
+}
+
+.upe-status_success {
+    background: #ebf7ee;
+    color: #2e844a;
+}
+
+.upe-status_info {
+    background: #eef4ff;
+    color: #0176d3;
+}
+
+.upe-status_warning {
+    background: #fef5e7;
+    color: #8c4b02;
+}
+
+.upe-status_error {
+    background: #fdeaea;
+    color: #ba0517;
+}
+
+.upe-skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #ecebea 37%, #f3f3f3 63%);
+    background-size: 400% 100%;
+    animation: upe-shimmer 1.4s ease infinite;
+    border-radius: 0.25rem;
+    height: 0.75rem;
+    width: 80%;
+}
+
+@keyframes upe-shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-skeleton {
+        animation: none;
+    }
+}

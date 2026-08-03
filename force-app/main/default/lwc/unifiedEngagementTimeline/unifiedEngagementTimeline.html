@@ -1,0 +1,124 @@
+<template>
+    <article class="slds-card upe-card">
+        <div class="upe-card__header slds-p-around_small">
+            <lightning-icon icon-name="standard:activations" size="small" class="slds-m-right_small"></lightning-icon>
+            <span class="slds-text-heading_small upe-card__title">Engagement Timeline</span>
+        </div>
+
+        <template lwc:if={loading}>
+            <div class="slds-p-around_medium">
+                <div class="upe-skeleton upe-skeleton_line"></div>
+                <div class="upe-skeleton upe-skeleton_line slds-m-top_x-small"></div>
+                <div class="upe-skeleton upe-skeleton_line slds-m-top_x-small"></div>
+            </div>
+        </template>
+
+        <template lwc:elseif={error}>
+            <div class="slds-p-around_medium slds-text-color_error slds-text-body_small">{error}</div>
+        </template>
+
+        <template lwc:else>
+            <div class="slds-p-horizontal_small slds-p-top_x-small upe-filters">
+                <div class="upe-filters__channels">
+                    <template for:each={channels} for:item="channel">
+                        <lightning-button
+                            key={channel.name}
+                            label={channel.label}
+                            variant={channel.variant}
+                            data-channel={channel.name}
+                            onclick={handleChannel}
+                            class="slds-m-right_xx-small"
+                        ></lightning-button>
+                    </template>
+                </div>
+
+                <template lwc:if={hasStatusFilter}>
+                    <lightning-button-menu
+                        class="upe-status"
+                        label={statusLabel}
+                        icon-name="utility:filterList"
+                        variant={statusVariant}
+                        menu-alignment="auto"
+                        alternative-text="Filter by status"
+                        title="Filter by status"
+                        onselect={handleStatus}
+                    >
+                        <template for:each={statusOptions} for:item="status">
+                            <lightning-menu-item
+                                key={status.value}
+                                value={status.value}
+                                label={status.label}
+                                checked={status.checked}
+                            ></lightning-menu-item>
+                        </template>
+                    </lightning-button-menu>
+                </template>
+            </div>
+
+            <template lwc:if={isEmpty}>
+                <div class="slds-p-around_medium slds-text-align_center slds-text-color_weak slds-text-body_small">
+                    <lightning-icon icon-name="utility:info_alt" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                    <p>{emptyMessage}</p>
+                </div>
+            </template>
+
+            <template lwc:if={hasEvents}>
+                <ul class="upe-timeline slds-p-around_small">
+                    <template for:each={visibleEvents} for:item="event">
+                        <li key={event.key} class="upe-timeline__item">
+                            <span class={event.nodeClass}>
+                                <lightning-icon
+                                    icon-name={event.iconName}
+                                    size="xx-small"
+                                    variant="inverse"
+                                ></lightning-icon>
+                            </span>
+
+                            <div class="upe-timeline__content">
+                                <div class="upe-timeline__row">
+                                    <span class="upe-event-type">{event.eventType}</span>
+                                    <span class="upe-timeline__date">
+                                        <lightning-formatted-date-time
+                                            value={event.eventDateTime}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit"
+                                            hour="2-digit"
+                                            minute="2-digit"
+                                        ></lightning-formatted-date-time>
+                                    </span>
+                                </div>
+
+                                <template lwc:if={event.hasCampaign}>
+                                    <p class="upe-timeline__campaign" title={event.campaignName}>
+                                        <lightning-icon
+                                            icon-name="utility:campaign"
+                                            size="xx-small"
+                                            class="slds-m-right_xx-small"
+                                        ></lightning-icon>
+                                        {event.campaignName}
+                                    </p>
+                                </template>
+
+                                <template lwc:if={event.hasDetail}>
+                                    <p class="upe-timeline__detail" title={event.detail}>{event.detail}</p>
+                                </template>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+
+                <template lwc:if={isExpandable}>
+                    <button class="upe-more" onclick={handleToggle} type="button">
+                        <lightning-icon
+                            icon-name={toggleIcon}
+                            size="xx-small"
+                            class="slds-m-right_xx-small upe-more__icon"
+                        ></lightning-icon>
+                        {toggleLabel}
+                    </button>
+                </template>
+            </template>
+        </template>
+    </article>
+</template>

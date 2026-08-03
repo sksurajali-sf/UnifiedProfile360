@@ -1,0 +1,16 @@
+<template>
+    <nav class="pxd-breadcrumb">
+        <button class="pxd-breadcrumb__link" onclick={handleBack} type="button">
+            <lightning-icon icon-name="utility:chevronleft" size="xx-small" class="slds-m-right_xx-small"></lightning-icon>
+            Profile Explorer
+        </button>
+        <span class="pxd-breadcrumb__sep">/</span>
+        <span class="pxd-breadcrumb__current">{profileName}</span>
+    </nav>
+
+    <c-unified-profile-view
+        record-id={unifiedId}
+        object-api-name={dmoApiName}
+        insight-api-names={insightApiNames}
+    ></c-unified-profile-view>
+</template>

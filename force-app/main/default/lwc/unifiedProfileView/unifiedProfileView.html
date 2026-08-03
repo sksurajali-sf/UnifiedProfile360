@@ -1,0 +1,56 @@
+<template>
+    <c-unified-profile-header
+        record-id={effectiveRecordId}
+        object-api-name={effectiveObject}
+    ></c-unified-profile-header>
+
+    <!-- Identity and insights take three fifths; the timelines run down the remaining two. -->
+    <div class="slds-grid slds-wrap slds-gutters_x-small slds-m-top_small">
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-5">
+            <c-unified-identity-breakdown
+                record-id={effectiveRecordId}
+                object-api-name={effectiveObject}
+            ></c-unified-identity-breakdown>
+
+            <c-unified-insight-panel
+                record-id={effectiveRecordId}
+                object-api-name={effectiveObject}
+                insight-api-names={insightApiNames}
+            ></c-unified-insight-panel>
+
+            <c-unified-segment-panel
+                record-id={effectiveRecordId}
+                object-api-name={effectiveObject}
+                page-size={segmentPageSize}
+                class="slds-m-top_small"
+            ></c-unified-segment-panel>
+
+            <c-unified-data-explorer
+                record-id={effectiveRecordId}
+                object-api-name={effectiveObject}
+                page-size={explorerPageSize}
+                class="slds-m-top_small"
+            ></c-unified-data-explorer>
+        </div>
+
+        <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-5 upe-column">
+            <div class="upe-pane upe-pane_tall">
+                <c-unified-engagement-timeline
+                    record-id={effectiveRecordId}
+                    object-api-name={effectiveObject}
+                    max-rows={engagementRows}
+                    initial-rows={initialRows}
+                ></c-unified-engagement-timeline>
+            </div>
+
+            <div class="upe-pane upe-pane_short slds-m-top_small">
+                <c-unified-order-timeline
+                    record-id={effectiveRecordId}
+                    object-api-name={effectiveObject}
+                    max-rows={orderRows}
+                    initial-rows={initialRows}
+                ></c-unified-order-timeline>
+            </div>
+        </div>
+    </div>
+</template>

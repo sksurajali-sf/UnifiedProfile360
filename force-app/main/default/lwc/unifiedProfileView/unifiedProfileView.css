@@ -1,0 +1,28 @@
+/*
+ * The identity column drives the page height, and the timeline column divides whatever that
+ * comes to between its two cards. Both columns therefore finish on the same line however many
+ * source records or insights the profile turns out to have.
+ */
+.upe-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.upe-pane {
+    min-height: 0;
+}
+
+.upe-pane_tall {
+    flex: 3;
+}
+
+.upe-pane_short {
+    flex: 2;
+}
+
+/* Percentage heights inside the cards need the host elements to be sized, not inline. */
+c-unified-engagement-timeline,
+c-unified-order-timeline {
+    display: block;
+    height: 100%;
+}

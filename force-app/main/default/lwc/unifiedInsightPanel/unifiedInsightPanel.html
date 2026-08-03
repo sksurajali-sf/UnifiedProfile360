@@ -1,0 +1,85 @@
+<template>
+    <article class="slds-card upe-card">
+        <div class="upe-card__header slds-p-around_small">
+            <lightning-icon icon-name="standard:einstein_replies" size="small" class="slds-m-right_small"></lightning-icon>
+            <span class="slds-text-heading_small upe-card__title">Calculated Insights</span>
+            <template lwc:if={rowCountLabel}>
+                <span class="slds-badge upe-count upe-count_right">{rowCountLabel}</span>
+            </template>
+        </div>
+
+        <div class="slds-p-around_small">
+            <template lwc:if={loadingOptions}>
+                <div class="upe-skeleton upe-skeleton_line"></div>
+            </template>
+
+            <template lwc:elseif={noOptions}>
+                <p class="slds-text-body_small slds-text-color_weak">
+                    No calculated insight in this org is keyed by a unified individual.
+                </p>
+            </template>
+
+            <template lwc:else>
+                <div class="upe-picker">
+                    <lightning-combobox
+                        label="Insight Object"
+                        value={selected}
+                        options={options}
+                        onchange={handleChange}
+                    ></lightning-combobox>
+                </div>
+
+                <template lwc:if={loadingData}>
+                    <div class="slds-m-top_medium">
+                        <div class="upe-skeleton upe-skeleton_tile"></div>
+                    </div>
+                </template>
+
+                <template lwc:elseif={error}>
+                    <p class="slds-m-top_small slds-text-body_small slds-text-color_error">{error}</p>
+                </template>
+
+                <template lwc:else>
+                    <template lwc:if={hasData}>
+                        <template for:each={viewRows} for:item="row">
+                            <div key={row.key} class="upe-group slds-m-top_medium">
+                                <template lwc:if={row.hasDimensions}>
+                                    <div class="upe-dims">
+                                        <template for:each={row.dimensions} for:item="dim">
+                                            <span key={dim.key} class="upe-dim" title={dim.apiName}>
+                                                <span class="upe-dim__label">{dim.label}</span>
+                                                <span class="upe-dim__value">{dim.textValue}</span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <div class="upe-metrics">
+                                    <template for:each={row.measures} for:item="measure">
+                                        <div key={measure.key} class="upe-metric">
+                                            <p class="upe-metric__label" title={measure.apiName}>{measure.label}</p>
+                                            <p class="upe-metric__value">
+                                                <lightning-formatted-number
+                                                    value={measure.value}
+                                                    maximum-fraction-digits="2"
+                                                ></lightning-formatted-number>
+                                            </p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={keyFieldLabel}>
+                            <p class="upe-keyfield slds-m-top_x-small">Keyed by {keyFieldLabel}</p>
+                        </template>
+                    </template>
+
+                    <template lwc:if={emptyMessage}>
+                        <p class="slds-m-top_small slds-text-body_small slds-text-color_weak">{emptyMessage}</p>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </article>
+</template>

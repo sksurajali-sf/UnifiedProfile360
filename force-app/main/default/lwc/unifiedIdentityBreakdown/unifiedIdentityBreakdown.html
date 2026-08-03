@@ -1,0 +1,161 @@
+<template>
+    <!-- Stacked full width: each section gets the whole column so the source table stays readable. -->
+    <div class="upe-breakdown">
+        <template for:each={viewSections} for:item="section">
+            <article key={section.key} class="slds-card upe-section slds-m-bottom_small">
+                <div class="upe-section__header slds-p-around_x-small">
+                    <button
+                        class="upe-section__toggle"
+                        data-key={section.key}
+                        onclick={handleToggle}
+                        aria-expanded={section.expanded}
+                        type="button"
+                    >
+                        <lightning-icon
+                            icon-name={section.iconToggle}
+                            size="xx-small"
+                            class="slds-m-right_xx-small upe-chevron"
+                        ></lightning-icon>
+                        <lightning-icon
+                            icon-name={section.icon}
+                            size="small"
+                            class="slds-m-right_x-small"
+                        ></lightning-icon>
+
+                        <span class="upe-section__title slds-truncate">{section.label}</span>
+
+                        <span class="slds-badge slds-m-left_x-small upe-count">{section.countLabel}</span>
+                    </button>
+
+                    <template lwc:if={section.winnerDisplay}>
+                        <span class="upe-winner slds-m-left_small" title={section.winnerDisplay}>
+                            <lightning-icon
+                                icon-name="utility:success"
+                                size="xx-small"
+                                variant="inverse"
+                                class="slds-m-right_xx-small"
+                            ></lightning-icon>
+                            <span class="slds-truncate">Winner: {section.winnerDisplay}</span>
+                        </span>
+
+                        <button
+                            class="upe-info"
+                            data-key={section.key}
+                            onclick={handleInfo}
+                            type="button"
+                            title="Why is this the winner?"
+                            aria-label="Why is this the winner?"
+                        >
+                            <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+                        </button>
+
+                        <div class={section.popoverClass} role="dialog" aria-label="Winner rationale">
+                            <p class="upe-popover__title">Why this record is the winner</p>
+                            <ul class="upe-popover__list">
+                                <li>{section.winnerLabel}.</li>
+                                <template lwc:if={section.winnerBasis}>
+                                    <li>{section.winnerBasis}</li>
+                                </template>
+                                <li>{section.agreementLabel}.</li>
+                                <template lwc:if={section.hasOtherValues}>
+                                    <li>{section.otherValuesLabel}.</li>
+                                </template>
+                                <template lwc:if={section.hasSources}>
+                                    <li>Contributing source systems: {section.sourcesLabel}.</li>
+                                </template>
+                                <template lwc:if={section.winnerLinkedDate}>
+                                    <li>
+                                        The green row was linked to this profile on
+                                        <lightning-formatted-date-time
+                                            value={section.winnerLinkedDate}
+                                            year="numeric"
+                                            month="short"
+                                            day="2-digit"
+                                        ></lightning-formatted-date-time>
+                                        &mdash; the date in its Created column.
+                                    </li>
+                                </template>
+                            </ul>
+                            <p class="upe-popover__note">
+                                The value itself is read from the unified record, so it is whatever your
+                                Identity Resolution reconciliation rule produced. That rule definition is
+                                not exposed to the API, so the green row is the source record the unified
+                                record is attributed to, falling back to the most recent record carrying
+                                the value.
+                            </p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class={section.bodyClass}>
+                    <template lwc:if={section.loading}>
+                        <div class="slds-p-around_medium">
+                            <div class="upe-skeleton upe-skeleton_line"></div>
+                            <div class="upe-skeleton upe-skeleton_line slds-m-top_x-small"></div>
+                        </div>
+                    </template>
+
+                    <template lwc:elseif={section.error}>
+                        <div class="slds-p-around_medium slds-text-color_error slds-text-body_small">
+                            {section.error}
+                        </div>
+                    </template>
+
+                    <template lwc:elseif={section.isEmpty}>
+                        <div class="slds-p-around_medium slds-text-color_weak slds-text-body_small">
+                            No contributing source records found.
+                        </div>
+                    </template>
+
+                    <template lwc:else>
+                        <table class="slds-table slds-table_bordered slds-table_fixed-layout upe-table">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th scope="col"><span class="slds-truncate">Source Record</span></th>
+                                    <th scope="col"><span class="slds-truncate">Source</span></th>
+                                    <th scope="col"><span class="slds-truncate">Created</span></th>
+                                    <th scope="col"><span class="slds-truncate">{section.valueHeader}</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={section.rows} for:item="row">
+                                    <tr key={row.key} class={row.rowClass}>
+                                        <td>
+                                            <span class="slds-truncate upe-mono" title={row.sourceRecordId}>
+                                                {row.sourceRecordId}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="slds-badge upe-source" title={row.dataSource}>
+                                                {row.dataSource}
+                                            </span>
+                                        </td>
+                                        <td title="When identity resolution first linked this record to the profile">
+                                            <template lwc:if={row.createdDate}>
+                                                <lightning-formatted-date-time
+                                                    value={row.createdDate}
+                                                    year="numeric"
+                                                    month="short"
+                                                    day="2-digit"
+                                                ></lightning-formatted-date-time>
+                                            </template>
+                                            <template lwc:else>—</template>
+                                        </td>
+                                        <td>
+                                            <span class="slds-truncate" title={row.displayValue}>
+                                                {row.displayValue}
+                                            </span>
+                                            <template lwc:if={row.isWinner}>
+                                                <span class="upe-pill slds-m-left_xx-small">Winner</span>
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </template>
+                </div>
+            </article>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Unified Segment Membership</masterLabel>
+    <description>Published segments this unified profile belongs to, newest publish first.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage">
+            <property
+                name="pageSize"
+                type="Integer"
+                label="Segments per page"
+                description="Rows shown before paging, and the size the reader's own picker starts on."
+                default="5"
+                min="5"
+                max="50"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

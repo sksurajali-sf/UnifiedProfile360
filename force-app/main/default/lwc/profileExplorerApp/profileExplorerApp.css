@@ -1,0 +1,41 @@
+.pxa {
+    background: #f3f3f3;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.pxa__masthead {
+    background: linear-gradient(90deg, #032d60 0%, #0176d3 100%);
+    padding: 0.875rem 1.25rem;
+}
+
+.pxa__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    --sds-c-icon-color-foreground-default: #ffffff;
+    --sds-c-icon-color-background: rgba(255, 255, 255, 0.18);
+}
+
+.pxa__titles {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.pxa__eyebrow {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.0625rem;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.pxa__title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.pxa__body {
+    padding: 1rem;
+}

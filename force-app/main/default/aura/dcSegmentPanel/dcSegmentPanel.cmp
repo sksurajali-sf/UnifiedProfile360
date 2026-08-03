@@ -1,0 +1,19 @@
+<!--
+  See dcProfileHeader for why each panel has its own shell.
+-->
+<aura:component
+    implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
+    access="global"
+    description="Published segments this unified profile belongs to, newest publish first."
+>
+    <aura:attribute name="recordId" type="String" access="global" />
+    <aura:attribute name="sObjectName" type="String" access="global" />
+
+    <aura:attribute name="pageSize" type="Integer" default="5" access="global" />
+
+    <c:unifiedSegmentPanel
+        recordId="{!v.recordId}"
+        objectApiName="{!v.sObjectName}"
+        pageSize="{!v.pageSize}"
+    />
+</aura:component>

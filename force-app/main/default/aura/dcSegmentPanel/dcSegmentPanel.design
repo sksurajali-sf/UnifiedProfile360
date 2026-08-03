@@ -1,0 +1,7 @@
+<design:component label="Unified Segment Membership">
+    <design:attribute
+        name="pageSize"
+        label="Segments per page"
+        description="Rows shown before paging. A profile can belong to hundreds of segments."
+    />
+</design:component>

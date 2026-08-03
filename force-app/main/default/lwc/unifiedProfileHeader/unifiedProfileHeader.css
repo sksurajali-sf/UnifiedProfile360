@@ -1,0 +1,118 @@
+.upe-header {
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+/* Neutral banner matching the card headers used across Data Cloud monitoring, rather than
+   the branded blue, so the page reads as one surface. */
+.upe-header__banner {
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e5e5;
+    color: #181818;
+}
+
+/* Sits above the person's name, so the page says what it is before it says who it is about. */
+.upe-header__product {
+    color: #0176d3;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.0625rem;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.upe-header__name {
+    color: #032d60;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.upe-header__ruleset {
+    color: #5c5c5c;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.upe-header__modified {
+    color: #181818;
+    margin-left: auto;
+}
+
+.upe-header__modified .upe-label {
+    color: #5c5c5c;
+}
+
+.upe-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #d8dde6;
+    color: #032d60;
+    font-size: 1.125rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.upe-fieldgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0.75rem 1.5rem;
+    padding-top: 1rem;
+}
+
+.upe-label {
+    color: #5c5c5c;
+    font-size: 0.75rem;
+}
+
+.upe-value {
+    color: #181818;
+    word-break: break-word;
+}
+
+.upe-value_mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+}
+
+.upe-skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #ecebea 37%, #f3f3f3 63%);
+    background-size: 400% 100%;
+    animation: upe-shimmer 1.4s ease infinite;
+    border-radius: 0.25rem;
+}
+
+.upe-skeleton_avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.upe-skeleton_title {
+    height: 1.25rem;
+    width: 40%;
+}
+
+.upe-skeleton_line {
+    height: 0.75rem;
+    width: 65%;
+}
+
+@keyframes upe-shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-skeleton {
+        animation: none;
+    }
+}

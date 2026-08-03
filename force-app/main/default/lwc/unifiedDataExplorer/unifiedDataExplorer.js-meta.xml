@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Unified Related Data Explorer</masterLabel>
+    <description>Pick any data model object linked to this individual, choose the columns to show, and page through its records.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage">
+            <property
+                name="pageSize"
+                type="Integer"
+                label="Records per page"
+                description="Rows shown before paging. The search itself fetches the latest 100."
+                default="5"
+                min="5"
+                max="25"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

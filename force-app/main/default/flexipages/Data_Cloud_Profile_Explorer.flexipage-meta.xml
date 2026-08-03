@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>dcProfileLayout</componentName>
+                <identifier>c_dcProfileLayout</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>header</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <name>main</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <name>sidebar</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    <masterLabel>Data Cloud Profile Explorer</masterLabel>
+    <template>
+        <name>runtime_cdp:cdpRecordHomeTemplateDesktop</name>
+        <properties>
+            <name>cdpEntityName</name>
+            <value>UnifiedIndividual__dlm</value>
+        </properties>
+    </template>
+    <type>CdpRecordPage</type>
+</FlexiPage>

@@ -1,0 +1,203 @@
+/* Fills the height handed down by the page, with the list scrolling inside, so the timeline
+   column finishes level with the identity column beside it. */
+/* Visible overflow so the status menu is not clipped by the card; the list below scrolls
+   on its own, so nothing else needs the card to clip. */
+.upe-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 24rem;
+    border-radius: 0.25rem;
+    overflow: visible;
+}
+
+/* 3rem keeps this level with the identity sections in the other column. */
+.upe-card__header {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    background: #f3f3f3;
+    border-bottom: 1px solid #e5e5e5;
+    border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.upe-card__title {
+    color: #032d60;
+    font-weight: 600;
+}
+
+.upe-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.5rem;
+    background: transparent;
+    border: 0;
+    border-top: 1px solid #e5e5e5;
+    color: #0176d3;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.upe-more:hover,
+.upe-more:focus {
+    background: #f3f9ff;
+}
+
+.upe-more__icon {
+    --slds-c-icon-color-foreground-default: #0176d3;
+    transition: transform 0.15s ease;
+}
+
+.upe-more:hover .upe-more__icon {
+    transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-more,
+    .upe-more__icon {
+        transition: none;
+    }
+}
+
+/* Channel tabs on the left, status filter hard against the opposite corner. */
+.upe-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.upe-filters__channels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+/* Above the timeline rail and rows, so the open menu is never painted over. */
+.upe-status {
+    position: relative;
+    z-index: 3;
+    flex-shrink: 0;
+    max-width: 45%;
+}
+
+.upe-timeline {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin: 0;
+    list-style: none;
+}
+
+/* Continuous rail behind the event nodes. */
+.upe-timeline::before {
+    content: '';
+    position: absolute;
+    top: 1.25rem;
+    bottom: 1rem;
+    left: 1.4375rem;
+    width: 1px;
+    background: #e5e5e5;
+}
+
+.upe-timeline__item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    padding: 0.5rem 0;
+}
+
+.upe-node {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: #747474;
+    flex-shrink: 0;
+}
+
+.upe-node_email {
+    background: #0176d3;
+}
+
+.upe-node_web {
+    background: #9050e9;
+}
+
+.upe-timeline__content {
+    margin-left: 0.75rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.upe-timeline__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.upe-event-type {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #181818;
+}
+
+.upe-timeline__date {
+    font-size: 0.6875rem;
+    color: #5c5c5c;
+    white-space: nowrap;
+}
+
+.upe-timeline__campaign {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #0176d3;
+    margin-top: 0.125rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upe-timeline__detail {
+    font-size: 0.75rem;
+    color: #5c5c5c;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upe-skeleton {
+    background: linear-gradient(90deg, #f3f3f3 25%, #ecebea 37%, #f3f3f3 63%);
+    background-size: 400% 100%;
+    animation: upe-shimmer 1.4s ease infinite;
+    border-radius: 0.25rem;
+    height: 0.75rem;
+    width: 80%;
+}
+
+@keyframes upe-shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upe-skeleton {
+        animation: none;
+    }
+}

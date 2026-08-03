@@ -1,0 +1,165 @@
+<template>
+    <div class="pex-filters">
+        <div class="pex-filters__row">
+            <div class="pex-filter">
+                <lightning-combobox
+                    label="Data Space"
+                    placeholder="Select Data Space"
+                    value={dataSpace}
+                    options={dataSpaces}
+                    disabled={loadingSpaces}
+                    onchange={handleDataSpace}
+                ></lightning-combobox>
+            </div>
+
+            <div class="pex-filter">
+                <lightning-combobox
+                    label="Object"
+                    placeholder="Select an Option"
+                    value={dmo}
+                    options={dmos}
+                    disabled={loadingDmos}
+                    onchange={handleDmo}
+                ></lightning-combobox>
+            </div>
+
+            <div class="pex-filter">
+                <label class="slds-form-element__label" for="attr">Attribute</label>
+                <div class="slds-form-element__control">
+                    <div class="slds-select_container">
+                        <select
+                            id="attr"
+                            class="slds-select"
+                            disabled={loadingAttributes}
+                            onchange={handleAttribute}
+                        >
+                            <template for:each={attributeGroups} for:item="group">
+                                <optgroup key={group.label} label={group.label}>
+                                    <template for:each={group.options} for:item="opt">
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </optgroup>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pex-filter pex-filter_grow">
+                <label class="slds-form-element__label" for="term">Search</label>
+                <div class="pex-search">
+                    <lightning-icon
+                        icon-name="utility:search"
+                        size="x-small"
+                        class="pex-search__icon"
+                    ></lightning-icon>
+                    <input
+                        id="term"
+                        type="text"
+                        class="pex-search__input"
+                        placeholder="Search profiles"
+                        value={searchTerm}
+                        oninput={handleTerm}
+                        onkeydown={handleKey}
+                    />
+                    <template lwc:if={searchTerm}>
+                        <button class="pex-search__clear" onclick={handleClear} title="Clear" type="button">
+                            <lightning-icon icon-name="utility:clear" size="xx-small"></lightning-icon>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="pex-filter pex-filter_action">
+                <lightning-button
+                    variant="brand"
+                    label="Search"
+                    disabled={searchDisabled}
+                    onclick={handleSearch}
+                ></lightning-button>
+            </div>
+        </div>
+    </div>
+
+    <template lwc:if={error}>
+        <div class="slds-m-top_small slds-text-color_error slds-text-body_small">{error}</div>
+    </template>
+
+    <div class="pex-results slds-m-top_medium">
+        <template lwc:if={searching}>
+            <div class="slds-p-around_medium">
+                <div class="pex-skeleton pex-skeleton_row"></div>
+                <div class="pex-skeleton pex-skeleton_row"></div>
+                <div class="pex-skeleton pex-skeleton_row"></div>
+            </div>
+        </template>
+
+        <template lwc:elseif={hasRows}>
+            <div class="pex-results__header">
+                <span class="pex-results__count">{resultCountLabel}</span>
+            </div>
+
+            <table class="slds-table slds-table_bordered pex-table">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th scope="col" class="pex-table__action"><span>Action</span></th>
+                        <th scope="col"><span>Name</span></th>
+                        <th scope="col"><span>{matchedColumnLabel}</span></th>
+                        <th scope="col"><span>Unified Individual Id</span></th>
+                        <th scope="col"><span>Created Date</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={rows} for:item="row">
+                        <tr key={row.unifiedId} class="slds-hint-parent">
+                            <td class="pex-table__action">
+                                <button
+                                    class="pex-view"
+                                    data-id={row.unifiedId}
+                                    data-name={row.name}
+                                    onclick={handleView}
+                                    type="button"
+                                >
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <span class="pex-name">{row.name}</span>
+                            </td>
+                            <td>{row.matchedValue}</td>
+                            <td><span class="pex-mono">{row.unifiedId}</span></td>
+                            <td>
+                                <template lwc:if={row.createdDate}>
+                                    <lightning-formatted-date-time
+                                        value={row.createdDate}
+                                        year="numeric"
+                                        month="short"
+                                        day="2-digit"
+                                    ></lightning-formatted-date-time>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </template>
+
+        <template lwc:elseif={showEmptyState}>
+            <div class="pex-empty">
+                <lightning-icon icon-name="utility:search" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                <p class="pex-empty__title">{message}</p>
+                <p class="pex-empty__hint">Try a different attribute or a shorter search term.</p>
+            </div>
+        </template>
+
+        <template lwc:elseif={showIdlePrompt}>
+            <div class="pex-empty">
+                <lightning-icon icon-name="standard:individual" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                <p class="pex-empty__title">Search for a unified profile</p>
+                <p class="pex-empty__hint">
+                    Pick a data space, object and attribute, then enter at least two characters.
+                </p>
+            </div>
+        </template>
+    </div>
+</template>
