@@ -45,7 +45,8 @@ private class UnifiedInsightControllerTest {
         // reach. The picker must still come back as a list rather than an exception.
         Test.startTest();
         List<UnifiedInsightController.InsightOption> options = UnifiedInsightController.getInsightOptions(
-            'Lifetime_Purchase_Count__cio'
+            'Lifetime_Purchase_Count__cio',
+            'UnifiedIndividual__dlm'
         );
         Test.stopTest();
 
@@ -129,7 +130,8 @@ private class UnifiedInsightControllerTest {
         UnifiedInsightController.keyFieldCache.put('Store_Footfall__cio', '');
 
         List<UnifiedInsightController.InsightOption> options = UnifiedInsightController.getInsightOptions(
-            'Lifetime_Purchase_Count__cio, Store_Footfall__cio'
+            'Lifetime_Purchase_Count__cio, Store_Footfall__cio',
+            'UnifiedIndividual__dlm'
         );
 
         Assert.areEqual(1, options.size(), 'The unkeyed insight is left out of the picker');
@@ -332,7 +334,7 @@ private class UnifiedInsightControllerTest {
             UnifiedInsightController.keyFieldCache.put(apiName, 'unified_individual_id__c');
         }
 
-        Assert.areEqual(15, UnifiedInsightController.getInsightOptions(String.join(names, ', ')).size());
+        Assert.areEqual(15, UnifiedInsightController.getInsightOptions(String.join(names, ', '), 'UnifiedIndividual__dlm').size());
     }
 
     @IsTest
@@ -340,13 +342,13 @@ private class UnifiedInsightControllerTest {
         // The probe needs the query service, which a test cannot reach. An insight that could
         // not be inspected stays in the picker so a transient failure empties nothing.
         Test.startTest();
-        Assert.isNull(UnifiedInsightController.keyFieldFor('Never_Inspected__cio'));
-        Assert.isNull(UnifiedInsightController.keyFieldFor('Never_Inspected__cio'), 'The failure is remembered');
+        Assert.isNull(UnifiedInsightController.keyFieldFor('Never_Inspected__cio', 'default'));
+        Assert.isNull(UnifiedInsightController.keyFieldFor('Never_Inspected__cio', 'default'), 'The failure is remembered');
         Test.stopTest();
 
         Assert.areEqual(
             1,
-            UnifiedInsightController.getInsightOptions('Never_Inspected__cio').size(),
+            UnifiedInsightController.getInsightOptions('Never_Inspected__cio', 'UnifiedIndividual__dlm').size(),
             'It is offered rather than dropped'
         );
     }

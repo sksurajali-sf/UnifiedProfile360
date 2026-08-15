@@ -29,9 +29,5 @@
         <members>unifiedSegmentPanel</members>
         <name>LightningComponentBundle</name>
     </types>
-    <types>
-        <members>Unified_Profile_360</members>
-        <name>FlexiPage</name>
-    </types>
     <version>67.0</version>
 </Package>

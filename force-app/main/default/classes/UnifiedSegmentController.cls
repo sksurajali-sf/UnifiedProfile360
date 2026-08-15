@@ -97,13 +97,13 @@ public with sharing class UnifiedSegmentController {
         }
 
         UnifiedProfileRegistry.DmoSet dmo = UnifiedProfileRegistry.resolve(objectApiName);
-        List<String> tables = membershipTables(dmo.segmentTablePrefix);
+        List<String> tables = membershipTables(dmo.segmentTablePrefix, dmo.prefix);
         if (tables.isEmpty()) {
             result.notice = 'No published segments are built on ' + dmo.unifiedIndividual + '.';
             return result;
         }
 
-        Map<String, Membership> memberships = readMemberships(tables, unifiedId);
+        Map<String, Membership> memberships = readMemberships(tables, unifiedId, dmo.dataSpace);
         if (memberships.isEmpty()) {
             return result;
         }
@@ -193,20 +193,32 @@ public with sharing class UnifiedSegmentController {
      * with the number of segments in the org.
      */
     @TestVisible
-    private static List<String> membershipTables(String prefix) {
+    private static List<String> membershipTables(String prefix, String spacePrefix) {
         List<String> tables = new List<String>();
         if (String.isBlank(prefix)) {
             return tables;
         }
 
-        // Underscores are single character wildcards in LIKE, so they are escaped to keep one
-        // ruleset's tables from matching another's.
-        String pattern = prefix.replace('_', '\\_') + '%';
+        /*
+         * Underscores are single character wildcards in LIKE, so they are escaped to keep one
+         * ruleset's tables from matching another's.
+         *
+         * Two spellings are tried. Segment membership tables in the default space carry no data
+         * space prefix (Individual_Unified_SMH_1779366689783__dlm), and no org to hand has
+         * segments in a renamed space to say whether that holds there too. Naming both forms
+         * covers it without the loose leading wildcard that would let one space's tables answer
+         * for another's, which matters because every space can hold an unsuffixed ruleset and
+         * those would otherwise be indistinguishable.
+         */
+        String bare = prefix.replace('_', '\\_') + '%';
+        String prefixed = String.isBlank(spacePrefix)
+            ? bare
+            : spacePrefix.replace('_', '\\_') + bare;
         try {
             for (AggregateResult a : [
                 SELECT SegmentMembershipTable tbl
                 FROM MarketSegment
-                WHERE SegmentMembershipTable LIKE :pattern
+                WHERE SegmentMembershipTable LIKE :bare OR SegmentMembershipTable LIKE :prefixed
                 WITH USER_MODE
                 GROUP BY SegmentMembershipTable
                 LIMIT :MAX_TABLES
@@ -227,7 +239,11 @@ public with sharing class UnifiedSegmentController {
      * segment republished nightly for a year still returns one row rather than 365.
      */
     @TestVisible
-    private static Map<String, Membership> readMemberships(List<String> tables, String unifiedId) {
+    private static Map<String, Membership> readMemberships(
+        List<String> tables,
+        String unifiedId,
+        String dataSpace
+    ) {
         Map<String, Membership> memberships = new Map<String, Membership>();
         String member = '\'' + String.escapeSingleQuotes(unifiedId).replace('\'', '\'\'') + '\'';
 
@@ -246,7 +262,7 @@ public with sharing class UnifiedSegmentController {
             try {
                 ConnectApi.CdpQueryInput input = new ConnectApi.CdpQueryInput();
                 input.sql = sql;
-                ConnectApi.CdpQueryOutputV2 output = ConnectApi.CdpQuery.queryAnsiSqlV2(input);
+                ConnectApi.CdpQueryOutputV2 output = UnifiedProfileRegistry.runQuery(input, dataSpace);
                 if (output.data == null || output.metadata == null) {
                     continue;
                 }

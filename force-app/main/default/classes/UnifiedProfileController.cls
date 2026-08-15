@@ -405,7 +405,7 @@ public with sharing class UnifiedProfileController {
                 mapped(
                     safeQuery(
                         'SELECT ssot__Id__c, ssot__FirstName__c, ssot__LastName__c, ssot__PersonName__c FROM ' +
-                            safeName(UnifiedProfileRegistry.SRC_INDIVIDUAL) +
+                            safeName(dmo.srcIndividual) +
                             ' WHERE ssot__Id__c IN :ids LIMIT ' +
                             MAX_SOURCE_IDS,
                         new Map<String, Object>{ 'ids' => ids }
@@ -513,19 +513,19 @@ public with sharing class UnifiedProfileController {
             section.label = 'Phone Numbers';
             unifiedDmo = dmo.unifiedPhone;
             linkDmo = dmo.phoneLink;
-            sourceDmo = UnifiedProfileRegistry.SRC_PHONE;
+            sourceDmo = dmo.srcPhone;
             valueSelect = 'ssot__TelephoneNumber__c';
         } else if (type == 'address') {
             section.label = 'Addresses';
             unifiedDmo = dmo.unifiedAddress;
             linkDmo = dmo.addressLink;
-            sourceDmo = UnifiedProfileRegistry.SRC_ADDRESS;
+            sourceDmo = dmo.srcAddress;
             valueSelect = 'ssot__AddressLine1__c, ssot__CityName__c, ssot__StateProvinceName__c, ssot__PostalCodeText__c';
         } else {
             section.label = 'Emails';
             unifiedDmo = dmo.unifiedEmail;
             linkDmo = dmo.emailLink;
-            sourceDmo = UnifiedProfileRegistry.SRC_EMAIL;
+            sourceDmo = dmo.srcEmail;
             valueSelect = 'ssot__EmailAddress__c';
         }
 
@@ -807,52 +807,62 @@ public with sharing class UnifiedProfileController {
         Set<String> bulkMessageIds = new Set<String>();
         Set<String> seen = new Set<String>();
 
-        String emailSelect =
-            'SELECT ssot__Id__c, ssot__IndividualId__c, ssot__EngagementDateTm__c,' +
-            ' ssot__EngagementChannelActionId__c, ssot__EngagementTypeId__c,' +
-            ' ssot__BulkEmailMessageId__c, ssot__EmailName__c, ssot__LinkName__c FROM ' +
-            safeName(UnifiedProfileRegistry.EMAIL_ENGAGEMENT);
-        String emailTail = ' ORDER BY ssot__EngagementDateTm__c DESC LIMIT ' + cap;
+        String emailDmo = dmo.emailEngagement;
+        if (String.isNotBlank(emailDmo)) {
+            String emailSelect =
+                'SELECT ssot__Id__c, ssot__IndividualId__c, ssot__EngagementDateTm__c,' +
+                ' ssot__EngagementChannelActionId__c, ssot__EngagementTypeId__c,' +
+                ' ssot__BulkEmailMessageId__c, ssot__EmailName__c, ssot__LinkName__c FROM ' +
+                safeName(emailDmo);
+            String emailTail = ' ORDER BY ssot__EngagementDateTm__c DESC LIMIT ' + cap;
 
-        for (Map<String, Object> e : mapped(
-            safeQuery(
-                emailSelect + ' WHERE ssot__IndividualId__c IN :ids' + emailTail,
-                new Map<String, Object>{ 'ids' => srcIds }
-            )
-        )) {
-            addEmailEvent(events, seen, bulkMessageIds, e);
-        }
-
-        /*
-         * Engagement that arrives without an individual, as file loads usually do, names the
-         * person by the address it was sent to. Every address on the profile counts, not just
-         * the winning one, so a record is not dropped for holding a runner-up address.
-         */
-        List<String> addresses = profileEmailAddresses(unifiedId, srcIds);
-        if (!addresses.isEmpty()) {
             for (Map<String, Object> e : mapped(
                 safeQuery(
-                    emailSelect + ' WHERE ssot__SendtimeEmailAddress__c IN :addresses' + emailTail,
-                    new Map<String, Object>{ 'addresses' => addresses }
+                    emailSelect + ' WHERE ssot__IndividualId__c IN :ids' + emailTail,
+                    new Map<String, Object>{ 'ids' => srcIds }
                 )
             )) {
                 addEmailEvent(events, seen, bulkMessageIds, e);
             }
+
+            /*
+             * Engagement that arrives without an individual, as file loads usually do, names the
+             * person by the address it was sent to. Every address on the profile counts, not just
+             * the winning one, so a record is not dropped for holding a runner-up address.
+             */
+            List<String> addresses = String.isBlank(dmo.srcEmail)
+                ? new List<String>()
+                : profileEmailAddresses(dmo.srcEmail, unifiedId, srcIds);
+            if (!addresses.isEmpty()) {
+                for (Map<String, Object> e : mapped(
+                    safeQuery(
+                        emailSelect + ' WHERE ssot__SendtimeEmailAddress__c IN :addresses' + emailTail,
+                        new Map<String, Object>{ 'addresses' => addresses }
+                    )
+                )) {
+                    addEmailEvent(events, seen, bulkMessageIds, e);
+                }
+            }
         }
 
-        Map<String, Object> webBinds = new Map<String, Object>{ 'ids' => srcIds };
-        List<SObject> webRows = queryOrNull(webEngagementSoql(true, cap), webBinds);
-        if (webRows == null) {
-            // The status column is not mapped in this org, and an unmapped column takes the
-            // whole query down with it.
-            webRows = safeQuery(webEngagementSoql(false, cap), webBinds);
+        String webDmo = dmo.webEngagement;
+        if (String.isNotBlank(webDmo)) {
+            Map<String, Object> webBinds = new Map<String, Object>{ 'ids' => srcIds };
+            List<SObject> webRows = queryOrNull(webEngagementSoql(webDmo, true, cap), webBinds);
+            if (webRows == null) {
+                // The status column is not mapped in this org, and an unmapped column takes the
+                // whole query down with it.
+                webRows = safeQuery(webEngagementSoql(webDmo, false, cap), webBinds);
+            }
+
+            for (Map<String, Object> w : mapped(webRows)) {
+                events.add(webEvent(w));
+            }
         }
 
-        for (Map<String, Object> w : mapped(webRows)) {
-            events.add(webEvent(w));
+        if (String.isNotBlank(dmo.bulkEmailMessage)) {
+            resolveCampaignNames(dmo.bulkEmailMessage, events, bulkMessageIds);
         }
-
-        resolveCampaignNames(events, bulkMessageIds);
 
         events.sort();
         return trimTo(events, cap);
@@ -900,7 +910,7 @@ public with sharing class UnifiedProfileController {
 
         List<OrderRow> orders = new List<OrderRow>();
         List<String> srcIds = sourceRecordIds(unifiedId, dmo.individualLink);
-        if (srcIds.isEmpty()) {
+        if (srcIds.isEmpty() || String.isBlank(dmo.salesOrder)) {
             return orders;
         }
 
@@ -922,14 +932,33 @@ public with sharing class UnifiedProfileController {
             SO_STATUS
         };
 
+        /*
+         * Only the customer columns this org mapped can be matched on. An unmapped column in a
+         * predicate fails the query outright, and unlike an unmapped column in the select list
+         * there is no retry that can recover it, so the panel would stay empty for an org that
+         * maps one of the two and not the other.
+         */
+        List<String> customerColumns = UnifiedProfileRegistry.presentFields(
+            dmo.salesOrder,
+            new List<String>{ SO_SOLD_TO, SO_BILL_TO }
+        );
+        if (customerColumns.isEmpty()) {
+            return orders;
+        }
+
         String ids = quotedList(srcIds);
-        String predicate = '(' + SO_SOLD_TO + ' IN (' + ids + ') OR ' + SO_BILL_TO + ' IN (' + ids + '))';
+        List<String> matches = new List<String>();
+        for (String column : customerColumns) {
+            matches.add(column + ' IN (' + ids + ')');
+        }
+        String predicate = '(' + String.join(matches, ' OR ') + ')';
 
         CdpRows result = queryDroppingUnknownColumns(
-            columns,
-            'FROM ' + UnifiedProfileRegistry.SALES_ORDER + ' WHERE ' + predicate,
+            UnifiedProfileRegistry.presentFields(dmo.salesOrder, columns),
+            'FROM ' + dmo.salesOrder + ' WHERE ' + predicate,
             SO_START_DATE,
-            cap
+            cap,
+            dmo.dataSpace
         );
 
         orders = orderRows(result);
@@ -1080,10 +1109,31 @@ public with sharing class UnifiedProfileController {
         List<String> columns,
         String fromWhere,
         String orderBy,
-        Integer rowLimit
+        Integer rowLimit,
+        String dataSpace
     ) {
         CdpRows result = new CdpRows();
-        List<String> remaining = new List<String>(columns);
+
+        /*
+         * Respelled up front rather than on the way out, because the retry below drops a column by
+         * matching the name the platform puts in its error message. Rewriting the finished SQL
+         * would leave that comparison holding names in the other spelling, and nothing would ever
+         * be dropped.
+         */
+        String queried = UnifiedProfileRegistry.queriedObject(fromWhere);
+        List<String> asked = UnifiedProfileRegistry.localise(columns, queried);
+        List<String> remaining = new List<String>(asked);
+        orderBy = UnifiedProfileRegistry.localise(new List<String>{ orderBy }, queried)[0];
+        fromWhere = UnifiedProfileRegistry.usesFieldNamespace(queried)
+            ? fromWhere
+            : fromWhere.replace('ssot__', '');
+
+        // Results go back to the caller under the names it asked for, so only this method ever
+        // sees the other spelling.
+        Map<String, String> asAsked = new Map<String, String>();
+        for (Integer i = 0; i < columns.size(); i++) {
+            asAsked.put(asked[i].toLowerCase(), columns[i]);
+        }
 
         for (Integer attempt = 0; attempt <= MAX_COLUMN_RETRIES && !remaining.isEmpty(); attempt++) {
             String sql = 'SELECT ' + String.join(remaining, ', ') + ' ' + fromWhere;
@@ -1095,11 +1145,15 @@ public with sharing class UnifiedProfileController {
             try {
                 ConnectApi.CdpQueryInput input = new ConnectApi.CdpQueryInput();
                 input.sql = sql;
-                ConnectApi.CdpQueryOutputV2 output = ConnectApi.CdpQuery.queryAnsiSqlV2(input);
+                ConnectApi.CdpQueryOutputV2 output = UnifiedProfileRegistry.runQuery(input, dataSpace);
 
                 if (output.metadata != null) {
                     for (String column : output.metadata.keySet()) {
-                        result.index.put(column, output.metadata.get(column).placeInOrder);
+                        String reported = column.toLowerCase();
+                        result.index.put(
+                            asAsked.containsKey(reported) ? asAsked.get(reported) : column,
+                            output.metadata.get(column).placeInOrder
+                        );
                     }
                 }
                 if (output.data != null) {
@@ -1442,7 +1496,11 @@ public with sharing class UnifiedProfileController {
     private static Map<String, List<String>> emailAddressCache = new Map<String, List<String>>();
 
     /** Every address the contributing records carry, winning or not. */
-    private static List<String> profileEmailAddresses(String unifiedId, List<String> srcIds) {
+    private static List<String> profileEmailAddresses(
+        String srcEmailDmo,
+        String unifiedId,
+        List<String> srcIds
+    ) {
         if (emailAddressCache.containsKey(unifiedId)) {
             return emailAddressCache.get(unifiedId);
         }
@@ -1451,7 +1509,7 @@ public with sharing class UnifiedProfileController {
         for (Map<String, Object> cp : mapped(
             safeQuery(
                 'SELECT ssot__EmailAddress__c FROM ' +
-                    safeName(UnifiedProfileRegistry.SRC_EMAIL) +
+                    safeName(srcEmailDmo) +
                     ' WHERE ssot__PartyId__c IN :ids LIMIT ' +
                     MAX_SOURCE_IDS,
                 new Map<String, Object>{ 'ids' => srcIds }
@@ -1468,7 +1526,11 @@ public with sharing class UnifiedProfileController {
         return result;
     }
 
-    private static void resolveCampaignNames(List<TimelineEvent> events, Set<String> bulkMessageIds) {
+    private static void resolveCampaignNames(
+        String bulkEmailDmo,
+        List<TimelineEvent> events,
+        Set<String> bulkMessageIds
+    ) {
         if (bulkMessageIds.isEmpty()) {
             return;
         }
@@ -1477,7 +1539,7 @@ public with sharing class UnifiedProfileController {
         for (Map<String, Object> m : mapped(
             safeQuery(
                 'SELECT ssot__Id__c, ssot__Name__c FROM ' +
-                    safeName(UnifiedProfileRegistry.BULK_EMAIL_MESSAGE) +
+                    safeName(bulkEmailDmo) +
                     ' WHERE ssot__Id__c IN :ids LIMIT ' +
                     MAX_SOURCE_IDS,
                 new Map<String, Object>{ 'ids' => ids }
@@ -1515,7 +1577,11 @@ public with sharing class UnifiedProfileController {
     /** Null for a query the org could not run, so a caller can retry without the missing column. */
     private static List<SObject> queryOrNull(String soql, Map<String, Object> binds) {
         try {
-            return Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE);
+            return Database.queryWithBinds(
+                UnifiedProfileRegistry.localise(soql),
+                binds,
+                AccessLevel.SYSTEM_MODE
+            );
         } catch (Exception e) {
             return null;
         }
@@ -1537,7 +1603,7 @@ public with sharing class UnifiedProfileController {
     }
 
     private static String str(SObject row, String field) {
-        Object v = row.get(field);
+        Object v = UnifiedProfileRegistry.value(row, field);
         return v == null ? null : String.valueOf(v);
     }
 
@@ -1548,7 +1614,7 @@ public with sharing class UnifiedProfileController {
     private static List<Map<String, Object>> mapped(List<SObject> rows) {
         List<Map<String, Object>> values = new List<Map<String, Object>>();
         for (SObject row : rows) {
-            values.add(row.getPopulatedFieldsAsMap());
+            values.add(UnifiedProfileRegistry.withStandardNames(row.getPopulatedFieldsAsMap()));
         }
         return values;
     }
@@ -1595,12 +1661,12 @@ public with sharing class UnifiedProfileController {
         return str(cp, 'ssot__EmailAddress__c');
     }
 
-    private static String webEngagementSoql(Boolean withActionStatus, Integer cap) {
+    private static String webEngagementSoql(String webDmo, Boolean withActionStatus, Integer cap) {
         return 'SELECT ssot__Id__c, ssot__IndividualId__c, ssot__EngagementDateTm__c,' +
             ' ssot__EngagementChannelActionId__c, ssot__EngagementTypeId__c,' +
             (withActionStatus ? ' ssot__EngmtChannelActionStatus__c,' : '') +
             ' ssot__UtmCampaignName__c, ssot__PagePublicTitleName__c, ssot__PageURL__c FROM ' +
-            safeName(UnifiedProfileRegistry.WEB_ENGAGEMENT) +
+            safeName(webDmo) +
             ' WHERE ssot__IndividualId__c IN :ids' +
             ' ORDER BY ssot__EngagementDateTm__c DESC LIMIT ' +
             cap;

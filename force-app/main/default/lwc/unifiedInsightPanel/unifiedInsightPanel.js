@@ -18,7 +18,10 @@ export default class UnifiedInsightPanel extends LightningElement {
     loadingData = false;
 
     connectedCallback() {
-        getInsightOptions({ insightApiNames: this.insightApiNames })
+        getInsightOptions({
+            insightApiNames: this.insightApiNames,
+            objectApiName: resolvePageContext(this).objectApiName
+        })
             .then((data) => {
                 this.options = (data || []).map((o) => ({ label: o.label, value: o.apiName }));
                 if (this.options.length) {

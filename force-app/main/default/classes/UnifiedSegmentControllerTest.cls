@@ -187,8 +187,13 @@ private class UnifiedSegmentControllerTest {
     static void membershipTablesAreFoundByTheirRulesetPrefix() {
         // A test sees no segments, so the list is empty; what matters is that a blank prefix
         // never reaches a query and an underscore in the prefix is not read as a wildcard.
-        Assert.areEqual(0, UnifiedSegmentController.membershipTables('').size());
-        Assert.areEqual(0, UnifiedSegmentController.membershipTables('Individual_Unified_SM').size());
+        Assert.areEqual(0, UnifiedSegmentController.membershipTables('', '').size());
+        Assert.areEqual(0, UnifiedSegmentController.membershipTables('Individual_Unified_SM', '').size());
+        Assert.areEqual(
+            0,
+            UnifiedSegmentController.membershipTables('IndividualApx1_Unified_SM', 'apj_').size(),
+            'A renamed space is looked up under both spellings'
+        );
     }
 
     @IsTest
@@ -198,7 +203,8 @@ private class UnifiedSegmentControllerTest {
         Test.startTest();
         Map<String, UnifiedSegmentController.Membership> memberships = UnifiedSegmentController.readMemberships(
             new List<String>{ 'Individual_Unified_SMH_178239085__dlm' },
-            '0f4a1c9e8b2d47f3a6c50e19b7d83af2'
+            '0f4a1c9e8b2d47f3a6c50e19b7d83af2',
+            'default'
         );
         Test.stopTest();
 

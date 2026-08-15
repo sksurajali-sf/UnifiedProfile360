@@ -110,7 +110,8 @@ public with sharing class UnifiedDmoExplorerController {
      */
     @AuraEnabled
     public static List<ObjectOption> getRelatedObjects(String objectApiName) {
-        Map<String, Entity> catalogue = catalogue();
+        String dataSpace = UnifiedProfileRegistry.resolve(objectApiName).dataSpace;
+        Map<String, Entity> catalogue = catalogue(dataSpace);
         if (catalogue.isEmpty()) {
             return new List<ObjectOption>();
         }
@@ -165,7 +166,8 @@ public with sharing class UnifiedDmoExplorerController {
     @AuraEnabled
     public static ObjectDetail describeObject(String dmoApiName, String objectApiName) {
         ObjectDetail detail = new ObjectDetail();
-        Entity entity = catalogue().get(dmoApiName);
+        String dataSpace = UnifiedProfileRegistry.resolve(objectApiName).dataSpace;
+        Entity entity = catalogue(dataSpace).get(dmoApiName);
         if (entity == null) {
             throw new AuraHandledException('Unknown data model object: ' + dmoApiName);
         }
@@ -212,7 +214,8 @@ public with sharing class UnifiedDmoExplorerController {
         Integer rowLimit
     ) {
         SearchResult result = new SearchResult();
-        Entity entity = catalogue().get(dmoApiName);
+        String dataSpace = UnifiedProfileRegistry.resolve(objectApiName).dataSpace;
+        Entity entity = catalogue(dataSpace).get(dmoApiName);
         if (entity == null) {
             throw new AuraHandledException('Unknown data model object: ' + dmoApiName);
         }
@@ -273,7 +276,7 @@ public with sharing class UnifiedDmoExplorerController {
         try {
             ConnectApi.CdpQueryInput input = new ConnectApi.CdpQueryInput();
             input.sql = sql;
-            ConnectApi.CdpQueryOutputV2 output = ConnectApi.CdpQuery.queryAnsiSqlV2(input);
+            ConnectApi.CdpQueryOutputV2 output = UnifiedProfileRegistry.runQuery(input, dataSpace);
 
             placeByColumn = new Map<String, Integer>();
             if (output.metadata != null) {
@@ -288,7 +291,7 @@ public with sharing class UnifiedDmoExplorerController {
                 }
             }
         } catch (Exception e) {
-            throw new AuraHandledException('Data Cloud could not run that query: ' + e.getMessage());
+            throw new AuraHandledException(queryFailure(dmoApiName, entity.label, e.getMessage()));
         }
 
         if (rows.size() > cap) {
@@ -363,7 +366,7 @@ public with sharing class UnifiedDmoExplorerController {
      * Every data model object in the default data space, keyed by API name. One service call
      * covers the picker, the field list and the name checks the query relies on.
      */
-    private static Map<String, Entity> catalogue() {
+    private static Map<String, Entity> catalogue(String dataSpace) {
         if (cachedCatalogue != null) {
             return cachedCatalogue;
         }
@@ -374,7 +377,7 @@ public with sharing class UnifiedDmoExplorerController {
                 'DataModelObject',
                 null,
                 null,
-                null
+                dataSpace
             );
             if (output != null && output.metadata != null) {
                 for (Object item : output.metadata) {
@@ -578,6 +581,40 @@ public with sharing class UnifiedDmoExplorerController {
     private static String firstNonBlank(String preferred, String fallback) {
         return String.isNotBlank(preferred) ? preferred : fallback;
     }
+
+    /**
+     * Why a chosen object could not be read, in terms of the thing the reader picked.
+     *
+     * The catalogue lists what the data model defines, which is not the same as what holds data:
+     * an object with no mapped data stream is offered here but has no table behind it. Confirming
+     * that up front would mean probing all hundred-odd objects on every page load, which measured
+     * at three quarters of a minute, so the failure is met when it happens and explained then.
+     * The platform's own wording for these two cases names a table or a column the reader never
+     * typed and carries a trace id, which reads as a broken page rather than an empty one.
+     */
+    @TestVisible
+    private static String queryFailure(String apiName, String label, String message) {
+        String named = String.isBlank(label) ? apiName : label + ' (' + apiName + ')';
+        String reason = String.isBlank(message) ? '' : message;
+
+        if (reason.contains('does not exist')) {
+            return named +
+                ' is defined in this org\'s data model but has no data behind it yet, so there is ' +
+                'nothing to search. It will appear here once a data stream is mapped to it.';
+        }
+        if (reason.containsIgnoreCase('unknown column')) {
+            Matcher column = UNKNOWN_COLUMN.matcher(reason);
+            return named +
+                ' does not hold ' +
+                (column.find() ? 'the column ' + column.group(1) : 'one of the chosen columns') +
+                ' in this org. Choose different columns, or map that field to the object first.';
+        }
+        return 'Data Cloud could not read ' + named + ': ' + reason;
+    }
+
+    private static final Pattern UNKNOWN_COLUMN = Pattern.compile(
+        '(?i)unknown column\\s+\'?"?([A-Za-z0-9_]+)'
+    );
 
     private static String safeName(String apiName) {
         if (String.isBlank(apiName) || !SAFE_NAME.matcher(apiName).matches()) {

@@ -5,6 +5,44 @@
  */
 @IsTest
 private class UnifiedDmoExplorerControllerTest {
+    /*
+     * The catalogue offers every object the data model defines, including ones no data stream
+     * feeds. Picking one of those is a normal thing to do and has to read as an empty result
+     * rather than as the page breaking.
+     */
+    @IsTest
+    static void anObjectWithNoDataBehindItSaysSoInItsOwnTerms() {
+        String said = UnifiedDmoExplorerController.queryFailure(
+            'Implementation__dlm',
+            'Implementation',
+            'CDPErrorCode: OBJECT_NOT_FOUND. Failed to execute query: table "Implementation__dlm" ' +
+                'does not exist [TraceId:1289fb27867c8acc]'
+        );
+
+        Assert.isTrue(said.contains('Implementation (Implementation__dlm)'), said);
+        Assert.isTrue(said.contains('no data behind it'), said);
+        Assert.isFalse(said.contains('TraceId'), 'A trace id means nothing to whoever is reading');
+    }
+
+    @IsTest
+    static void anUnmappedColumnNamesTheColumnAndWhatToDo() {
+        String said = UnifiedDmoExplorerController.queryFailure(
+            'Individual__dlm',
+            'Individual',
+            'Failed to execute query: unknown column \'Esta_Eliminado__c\' [TraceId:21129c3ba0701442]'
+        );
+
+        Assert.isTrue(said.contains('Esta_Eliminado__c'), said);
+        Assert.isTrue(said.contains('Choose different columns'), said);
+    }
+
+    @IsTest
+    static void anythingElseIsPassedThroughRatherThanGuessedAt() {
+        String said = UnifiedDmoExplorerController.queryFailure('X__dlm', 'X', 'Request timed out');
+
+        Assert.isTrue(said.contains('Request timed out'), said);
+    }
+
     /** A rendering of one entity, in the shape the metadata service produces. */
     private static final String SALES_ORDER =
         '{fields=[{name=KQ_BillToContactId__c, displayName=Key Qualifier Bill To Contact, type=STRING, businessType=TEXT}, ' +

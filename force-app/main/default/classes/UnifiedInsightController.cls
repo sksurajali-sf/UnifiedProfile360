@@ -83,7 +83,8 @@ public with sharing class UnifiedInsightController {
      *                        cannot be read, which keeps older page configurations working.
      */
     @AuraEnabled
-    public static List<InsightOption> getInsightOptions(String insightApiNames) {
+    public static List<InsightOption> getInsightOptions(String insightApiNames, String objectApiName) {
+        String dataSpace = UnifiedProfileRegistry.resolve(objectApiName).dataSpace;
         List<String> candidates = catalogueApiNames();
         if (candidates.isEmpty()) {
             candidates = splitNames(insightApiNames);
@@ -97,7 +98,7 @@ public with sharing class UnifiedInsightController {
             // An insight known not to be keyed by a unified individual cannot be shown against
             // this profile. One that could not be inspected is kept, so a transient query
             // service failure empties nothing.
-            String keyField = keyFieldFor(apiName);
+            String keyField = keyFieldFor(apiName, dataSpace);
             if (String.isBlank(keyField) && !probeFailed.contains(apiName)) {
                 continue;
             }
@@ -127,7 +128,8 @@ public with sharing class UnifiedInsightController {
             return result;
         }
 
-        result.keyField = keyFieldFor(ciApiName);
+        String dataSpace = UnifiedProfileRegistry.resolve(objectApiName).dataSpace;
+        result.keyField = keyFieldFor(ciApiName, dataSpace);
         if (String.isBlank(result.keyField)) {
             result.message = result.label + ' is not keyed by a unified individual id.';
             return result;
@@ -144,7 +146,8 @@ public with sharing class UnifiedInsightController {
                         ' = \'' +
                         escapeLiteral(unifiedId) +
                         '\' LIMIT ' +
-                        MAX_ROWS
+                        MAX_ROWS,
+                    dataSpace
                 ),
                 ciApiName
             );
@@ -260,13 +263,13 @@ public with sharing class UnifiedInsightController {
 
     /** Returns the unified individual column on an insight, or null when it has none. */
     @TestVisible
-    private static String keyFieldFor(String ciApiName) {
+    private static String keyFieldFor(String ciApiName, String dataSpace) {
         if (keyFieldCache.containsKey(ciApiName) || probeFailed.contains(ciApiName)) {
             return keyFieldCache.get(ciApiName);
         }
 
         try {
-            ConnectApi.CdpQueryOutputV2 probe = runSql('SELECT * FROM ' + ciApiName + ' LIMIT 1');
+            ConnectApi.CdpQueryOutputV2 probe = runSql('SELECT * FROM ' + ciApiName + ' LIMIT 1', dataSpace);
             String keyField = findKeyField(orderedColumns(probe).values());
             keyFieldCache.put(ciApiName, keyField == null ? '' : keyField);
             return keyField;
@@ -291,10 +294,10 @@ public with sharing class UnifiedInsightController {
         return names;
     }
 
-    private static ConnectApi.CdpQueryOutputV2 runSql(String sql) {
+    private static ConnectApi.CdpQueryOutputV2 runSql(String sql, String dataSpace) {
         ConnectApi.CdpQueryInput input = new ConnectApi.CdpQueryInput();
         input.sql = sql;
-        return ConnectApi.CdpQuery.queryAnsiSqlV2(input);
+        return UnifiedProfileRegistry.runQuery(input, dataSpace);
     }
 
     private static Map<Integer, String> orderedColumns(ConnectApi.CdpQueryOutputV2 output) {

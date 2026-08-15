@@ -8,7 +8,7 @@ related data model object without writing SQL.
 
 | | |
 | --- | --- |
-| **Install (any org)** | https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ9000000l3ke |
+| **Install (any org)** | https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKh000001lrUH |
 | **Installation password** | `GDC@India` |
 | **Implementation guide** | [`docs/Unified_Profile_360_Implementation_Guide.pdf`](docs/Unified_Profile_360_Implementation_Guide.pdf) |
 | **API version** | 67.0 |
@@ -51,10 +51,16 @@ loaded from a file that carries only an address are not lost.
 | ApexClass | 10 | 5 controllers + 5 test classes |
 | AuraDefinitionBundle | 1 | `dcProfileLayout` |
 | LightningComponentBundle | 9 | 8 panels + the shared page-context module |
-| FlexiPage | 1 | `Unified_Profile_360` — CDP record page for `UnifiedIndividual__dlm` |
 
-21 members, 4 metadata types. No custom object, no stored data, no scheduled job, nothing written
+20 members, 3 metadata types. No custom object, no stored data, no scheduled job, nothing written
 back to Data Cloud.
+
+**No Lightning page ships with the package, deliberately.** A CDP record page has to name one
+concrete DMO, so a package containing one only installs in orgs that happen to have that exact
+name. An org whose ruleset produces `UnifiedssotIndividualTicu__dlm` has no
+`UnifiedIndividual__dlm`, and the install fails outright. Leaving the page out makes the package
+installable in every Data Cloud org regardless of how its rulesets are named; you build the page
+once after installing, which takes about five clicks.
 
 The Aura shell exists because a Lightning web component cannot target a CDP record page.
 `dcProfileLayout` implements `flexipage:availableForAllPageTypes`, passes `recordId` /
@@ -74,11 +80,32 @@ sf apex run test --target-org TARGET_ORG \
   --result-format human --wait 20
 ```
 
-116 tests, every class above 75% coverage. Then activate `Unified Profile 360` as the org default
-CDP record page for Unified Individual (Setup → Lightning App Builder → open the page →
-Activation). Section 9 of the
-implementation guide covers this, including how to build the same page for a ruleset other than
-the standard Unified Individual.
+116 tests, every class above 75% coverage.
+
+## After installing: build the page
+
+Same five steps whichever ruleset you use.
+
+1. Setup → **Lightning App Builder** → **New** → **CDP Record Page**.
+2. Name it, then choose your Unified Individual DMO — `UnifiedIndividual__dlm` on the standard
+   ruleset, or the ruleset's own name such as `UnifiedssotIndividualMc__dlm`.
+3. Drag **Unified Profile Page** from the Custom section of the palette onto the page.
+4. **Save**, then **Activation** → set it as the org default for that DMO.
+5. Open Profile Explorer, search, click **View**.
+
+Section 9 of the implementation guide covers this with screenshots.
+
+If your org uses the standard ruleset you can skip App Builder and deploy the ready-made page
+instead:
+
+```bash
+mkdir -p force-app/main/default/flexipages
+cp optional/flexipages/Unified_Profile_360.flexipage-meta.xml force-app/main/default/flexipages/
+sf project deploy start --metadata FlexiPage:Unified_Profile_360 --target-org TARGET_ORG
+```
+
+It is kept out of the package for the reason given above; deploy it only into an org that
+actually has `UnifiedIndividual__dlm`.
 
 ## Data Cloud objects read
 
@@ -98,6 +125,6 @@ insight, and whichever DMO the user picks in Explore Related Data. Nothing is wr
 - Data Cloud objects are absent from `getGlobalDescribe` and `EntityDefinition`, so Explore
   Related Data builds its object list from the Data Cloud metadata service at runtime rather than
   from Apex schema describe.
-- Only the page for the standard Unified Individual is packaged. Rulesets such as Unified
-  Individual MC carry org-specific DMO names, so their pages are built in App Builder — five
-  clicks, same components, covered in Section 9.2 of the guide.
+- No Lightning page is packaged, so the install works in any Data Cloud org whatever its rulesets
+  are called. Every org builds its page in App Builder — five clicks, same components, covered in
+  Section 9 of the guide. One page per ruleset if you run several.

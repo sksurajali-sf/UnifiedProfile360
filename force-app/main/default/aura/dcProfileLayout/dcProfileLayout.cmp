@@ -1,7 +1,10 @@
 <!--
-  The whole profile page as a single drop. A CDP record page region is one column wide, so the
-  side-by-side arrangement has to come from inside the component rather than from the page.
-  The individual dc* wrappers remain available for pages that need a custom arrangement.
+  The whole profile page as a single drop, and the only component this package puts in the
+  App Builder palette. A CDP record page region is one column wide, so the side-by-side
+  arrangement has to come from inside the component rather than from the page.
+
+  An Aura shell is needed at all because a Lightning web component cannot target a CDP record
+  page; this one exists purely to hand recordId and sObjectName through to the LWC.
 -->
 <aura:component
     implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:hasSObjectName"
