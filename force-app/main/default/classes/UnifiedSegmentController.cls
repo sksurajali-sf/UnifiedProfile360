@@ -97,7 +97,7 @@ public with sharing class UnifiedSegmentController {
         }
 
         UnifiedProfileRegistry.DmoSet dmo = UnifiedProfileRegistry.resolve(objectApiName);
-        List<String> tables = membershipTables(dmo.segmentTablePrefix, dmo.prefix);
+        List<String> tables = membershipTables(dmo.segmentTablePrefix, dmo.prefix, dmo.dataSpace);
         if (tables.isEmpty()) {
             result.notice = 'No published segments are built on ' + dmo.unifiedIndividual + '.';
             return result;
@@ -189,13 +189,30 @@ public with sharing class UnifiedSegmentController {
     }
 
     /**
-     * Distinct membership tables for this ruleset. An aggregate query, so the cost does not grow
-     * with the number of segments in the org.
+     * Membership tables for this ruleset.
+     *
+     * The catalogue is asked first because it is the only place the current-membership table
+     * appears. MarketSegment names a segment's history table and nothing points at its current
+     * one, and the two cannot be derived from each other, so falling back to MarketSegment means
+     * falling back to history — worth doing when the catalogue cannot be read, but only then.
      */
     @TestVisible
-    private static List<String> membershipTables(String prefix, String spacePrefix) {
+    private static List<String> membershipTables(
+        String prefix,
+        String spacePrefix,
+        String dataSpace
+    ) {
         List<String> tables = new List<String>();
         if (String.isBlank(prefix)) {
+            return tables;
+        }
+
+        for (String name : UnifiedProfileRegistry.segmentTables(prefix, spacePrefix, dataSpace)) {
+            if (SAFE_NAME.matcher(name).matches() && tables.size() < MAX_TABLES) {
+                tables.add(name);
+            }
+        }
+        if (!tables.isEmpty()) {
             return tables;
         }
 

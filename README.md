@@ -8,7 +8,7 @@ related data model object without writing SQL.
 
 | | |
 | --- | --- |
-| **Install (any org)** | https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKh000001lrUH |
+| **Install (any org)** | https://login.salesforce.com/packaging/installPackage.apexp?p0=04tKh000001lrUM |
 | **Installation password** | `GDC@India` |
 | **Implementation guide** | [`docs/Unified_Profile_360_Implementation_Guide.pdf`](docs/Unified_Profile_360_Implementation_Guide.pdf) |
 | **API version** | 67.0 |

@@ -293,6 +293,96 @@ public with sharing class UnifiedProfileRegistry {
         return ConnectApi.CdpQuery.queryAnsiSqlV2(input, dataSpace);
     }
 
+    // ---------------------------------------------------------------- segment membership
+
+    @TestVisible
+    private static Map<String, Set<String>> objectsBySpace = new Map<String, Set<String>>();
+
+    private static final Pattern CATALOGUE_NAME = Pattern.compile('name=([A-Za-z0-9_]+__dlm)');
+
+    /** Every data model object a space holds, as the metadata service reports them. */
+    @TestVisible
+    private static Set<String> objectsIn(String dataSpace) {
+        String key = String.isBlank(dataSpace) ? '' : dataSpace;
+        if (objectsBySpace.containsKey(key)) {
+            return objectsBySpace.get(key);
+        }
+
+        Set<String> names = new Set<String>();
+        try {
+            ConnectApi.CdpQueryMetadataOutput output = ConnectApi.CdpQuery.getAllMetadata(
+                'DataModelObject',
+                null,
+                null,
+                dataSpace
+            );
+            if (output != null && output.metadata != null) {
+                // Each entry is read on its own: converting the whole reply at once truncates it.
+                for (Object entry : output.metadata) {
+                    Matcher found = CATALOGUE_NAME.matcher(String.valueOf(entry));
+                    if (found.find()) {
+                        names.add(found.group(1));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // No catalogue means the caller falls back to whatever else it can find.
+        }
+
+        objectsBySpace.put(key, names);
+        return names;
+    }
+
+    /**
+     * Segment membership tables for one ruleset, current membership ahead of history.
+     *
+     * Each ruleset gets a pair: <ruleset>_Unified_SM_<id> holding who is in each segment now, and
+     * <ruleset>_Unified_SMH_<id> accumulating every change. The current table is the one worth
+     * reading — measured against one ruleset in Asset Org 2 it covered twelve segments and eleven
+     * members where the history table showed ten and four, because history keeps repeating the
+     * same few members rather than recording the rest.
+     *
+     * They have to be discovered rather than constructed. The two ids differ from each other
+     * (..._SM_1779366683577 against ..._SMH_1779366689783), they are assigned per org, and the
+     * platform truncates the name once it grows too long, which cuts the id short. The ruleset's
+     * own prefix is what separates its tables from another ruleset's, from segments built on the
+     * source object rather than the unified one, and from other entities entirely.
+     */
+    public static List<String> segmentTables(
+        String segmentPrefix,
+        String spacePrefix,
+        String dataSpace
+    ) {
+        List<String> current = new List<String>();
+        List<String> history = new List<String>();
+        if (String.isBlank(segmentPrefix)) {
+            return current;
+        }
+
+        // A renamed space may or may not stamp its prefix on these; both are allowed for.
+        List<String> stems = new List<String>{ segmentPrefix };
+        if (String.isNotBlank(spacePrefix)) {
+            stems.add(spacePrefix + segmentPrefix);
+        }
+
+        for (String name : objectsIn(dataSpace)) {
+            for (String stem : stems) {
+                if (name.startsWithIgnoreCase(stem + '_')) {
+                    current.add(name);
+                    break;
+                }
+                if (name.startsWithIgnoreCase(stem + 'H_')) {
+                    history.add(name);
+                    break;
+                }
+            }
+        }
+
+        current.sort();
+        history.sort();
+        return current.isEmpty() ? history : current;
+    }
+
     // ---------------------------------------------------------------- field naming
 
     @TestVisible

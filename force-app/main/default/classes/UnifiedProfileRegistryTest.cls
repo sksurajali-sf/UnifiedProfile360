@@ -397,6 +397,105 @@ private class UnifiedProfileRegistryTest {
         );
     }
 
+    /** The catalogue as Asset Org 2 reports it, standing in for the metadata call. */
+    private static void catalogueHolds(Set<String> names) {
+        UnifiedProfileRegistry.objectsBySpace.put('', names);
+    }
+
+    private static final Set<String> ASSET_ORG_2 = new Set<String>{
+        'Individual_Unified_SM_1779366683577__dlm',
+        'Individual_Unified_SMH_1779366689783__dlm',
+        'ssotIndividualMc_Unified_SM_1782390847__dlm',
+        'ssotIndividualMc_Unified_SMH_178239085__dlm',
+        'ssotIndividualPoc1_Unified_SM_17823906__dlm',
+        'ssotIndividualPoc1_Unified_SMH_1782390__dlm',
+        'Individual_SM_1782815121099__dlm',
+        'Individual_SMH_1782815127904__dlm',
+        'Account_SM_1781519503699__dlm',
+        'Account_SMH_1781519509974__dlm'
+    };
+
+    @IsTest
+    static void currentMembershipIsPreferredToHistory() {
+        catalogueHolds(ASSET_ORG_2);
+
+        List<String> tables = UnifiedProfileRegistry.segmentTables(
+            'ssotIndividualMc_Unified_SM',
+            null,
+            null
+        );
+
+        Assert.areEqual(
+            new List<String>{ 'ssotIndividualMc_Unified_SM_1782390847__dlm' },
+            tables,
+            'The history table should be left behind while the current one exists.'
+        );
+    }
+
+    @IsTest
+    static void oneRulesetsSegmentsAreNotAnothers() {
+        catalogueHolds(ASSET_ORG_2);
+
+        Assert.areEqual(
+            new List<String>{ 'ssotIndividualPoc1_Unified_SM_17823906__dlm' },
+            UnifiedProfileRegistry.segmentTables('ssotIndividualPoc1_Unified_SM', null, null),
+            'A truncated id should not stop a ruleset finding its own table.'
+        );
+    }
+
+    /**
+     * The standard ruleset's prefix is a leading part of nothing else, but segments built on the
+     * source object sit one word away from it and have to stay out.
+     */
+    @IsTest
+    static void segmentsOnTheSourceObjectAndOnOtherEntitiesAreLeftOut() {
+        catalogueHolds(ASSET_ORG_2);
+
+        Assert.areEqual(
+            new List<String>{ 'Individual_Unified_SM_1779366683577__dlm' },
+            UnifiedProfileRegistry.segmentTables('Individual_Unified_SM', null, null),
+            'Individual_SM_ and Account_SM_ are other things entirely.'
+        );
+    }
+
+    @IsTest
+    static void historyIsReadWhenItIsAllTheOrgHas() {
+        catalogueHolds(
+            new Set<String>{
+                'ssotIndividualMc_Unified_SMH_178239085__dlm',
+                'Account_SM_1781519503699__dlm'
+            }
+        );
+
+        Assert.areEqual(
+            new List<String>{ 'ssotIndividualMc_Unified_SMH_178239085__dlm' },
+            UnifiedProfileRegistry.segmentTables('ssotIndividualMc_Unified_SM', null, null),
+            'A panel showing history beats a panel showing nothing.'
+        );
+    }
+
+    @IsTest
+    static void aRenamedSpaceMayOrMayNotStampItsPrefixOnThem() {
+        catalogueHolds(new Set<String>{ 'apj_IndividualApx1_Unified_SM_178239084__dlm' });
+
+        Assert.areEqual(
+            new List<String>{ 'apj_IndividualApx1_Unified_SM_178239084__dlm' },
+            UnifiedProfileRegistry.segmentTables('IndividualApx1_Unified_SM', 'apj_', null),
+            'The space prefix should be tried as well as omitted.'
+        );
+    }
+
+    @IsTest
+    static void aRulesetWithNoSegmentsFindsNoTables() {
+        catalogueHolds(ASSET_ORG_2);
+
+        Assert.areEqual(
+            0,
+            UnifiedProfileRegistry.segmentTables('ssotIndividualOld_Unified_SM', null, null).size()
+        );
+        Assert.areEqual(0, UnifiedProfileRegistry.segmentTables('', null, null).size());
+    }
+
     @IsTest
     static void aSharedSuffixThatMatchesNoSpaceNamesNone() {
         UnifiedProfileRegistry.spacesBySuffix = new Map<String, List<String>>{

@@ -187,11 +187,11 @@ private class UnifiedSegmentControllerTest {
     static void membershipTablesAreFoundByTheirRulesetPrefix() {
         // A test sees no segments, so the list is empty; what matters is that a blank prefix
         // never reaches a query and an underscore in the prefix is not read as a wildcard.
-        Assert.areEqual(0, UnifiedSegmentController.membershipTables('', '').size());
-        Assert.areEqual(0, UnifiedSegmentController.membershipTables('Individual_Unified_SM', '').size());
+        Assert.areEqual(0, UnifiedSegmentController.membershipTables('', '', null).size());
+        Assert.areEqual(0, UnifiedSegmentController.membershipTables('Individual_Unified_SM', '', null).size());
         Assert.areEqual(
             0,
-            UnifiedSegmentController.membershipTables('IndividualApx1_Unified_SM', 'apj_').size(),
+            UnifiedSegmentController.membershipTables('IndividualApx1_Unified_SM', 'apj_', null).size(),
             'A renamed space is looked up under both spellings'
         );
     }
